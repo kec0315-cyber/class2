@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v8.6 (내부자 로직 개선판)</title>
+    <title>클래스 스탁 하이퍼 v8.7 (차트 범례 & 공무원 기능 강화)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,7 +20,7 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
             <h1 class="text-3xl font-black text-center text-indigo-600 mb-2">CLASS STOCK</h1>
-            <p class="text-center text-slate-400 mb-8 text-sm">에듀테크 경제 시뮬레이터 v8.6</p>
+            <p class="text-center text-slate-400 mb-8 text-sm">에듀테크 경제 시뮬레이터 v8.7</p>
             <div class="space-y-4">
                 <input type="text" id="login-id" placeholder="아이디" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="password" id="login-pw" placeholder="비밀번호" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400" onkeypress="if(event.key === 'Enter') login()">
@@ -56,7 +56,7 @@
                     </div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <canvas id="marketChart" height="120"></canvas>
+                        <canvas id="marketChart" height="130"></canvas>
                     </div>
                 </div>
 
@@ -223,7 +223,6 @@
             }
 
             updateUI();
-            updateInterviewPlaceholder(); // 접속 시 맞춤형 안내 문구 출력
         }
 
         function updateUI() {
@@ -241,26 +240,22 @@
             renderCompanies();
             renderNews();
             updateChart();
-            if (currentUser.role === 'teacher') renderModerationList();
+            if (currentUser && currentUser.role === 'teacher') renderModerationList();
         }
 
-        // --- 선택한 기업에 따라 자동 신분 및 안내 문구 전환 로직 ---
+        // --- 공무원 '전체 시장' 선택 기능 및 상황별 안내문구 로직 ---
         function updateInterviewPlaceholder() {
             if (!currentUser) return;
             const ta = document.getElementById('interview-text');
             const dropdown = document.getElementById('target-company');
             const targetName = dropdown.options[dropdown.selectedIndex]?.text || "이 기업";
-            const targetCompanyId = parseInt(dropdown.value);
+            const targetCompanyId = dropdown.value; // 'all' 이거나 숫자
 
             let effectiveRole = currentUser.role;
             
-            // 핵심 변경 부분: 내부자는 본인 소속 기업일 때만 내부자, 타사일 때는 시민으로 취급
             if (currentUser.role === 'insider') {
-                if (targetCompanyId === currentUser.companyId) {
-                    effectiveRole = 'insider';
-                } else {
-                    effectiveRole = 'citizen';
-                }
+                if (parseInt(targetCompanyId) === currentUser.companyId) effectiveRole = 'insider';
+                else effectiveRole = 'citizen';
             }
 
             if (effectiveRole === 'citizen') {
@@ -268,7 +263,11 @@
             } else if (effectiveRole === 'insider') {
                 ta.placeholder = `내부자로서 우리 기업([${targetName}])의 기밀 정보, 향후 사업 계획, 내부 사정 등을 제보해주세요.`;
             } else if (effectiveRole === 'gov') {
-                ta.placeholder = `공무원으로서 시장과 [${targetName}]에 영향을 줄 수 있는 새로운 정책, 규제, 공식 입장을 작성해주세요.`;
+                if (targetCompanyId === 'all') {
+                    ta.placeholder = `공무원으로서 시장 전체에 영향을 줄 수 있는 거시적인 경제 정책이나 공식 입장을 작성해주세요.`;
+                } else {
+                    ta.placeholder = `공무원으로서 [${targetName}]에 영향을 줄 수 있는 특정 규제나 지원 정책을 작성해주세요.`;
+                }
             } else {
                 ta.placeholder = "시장에 전달할 내용을 입력하세요...";
             }
@@ -276,41 +275,46 @@
 
         function submitInterview() {
             const text = document.getElementById('interview-text').value.trim();
-            const companyId = parseInt(document.getElementById('target-company').value);
-            const isAnnounce = document.getElementById('is-announcement').checked;
+            const companyIdValue = document.getElementById('target-company').value;
+            const isAnnounce = document.getElementById('is-announcement')?.checked;
 
             if (!text) return alert("내용을 입력하세요.");
 
             let effectiveRole = currentUser.role;
+            let companyId = companyIdValue === 'all' ? null : parseInt(companyIdValue);
+            let compName = "전체 시장";
             
-            // 제보를 저장할 때도 신분을 자동으로 분기 처리합니다.
+            if (companyId) {
+                const comp = state.companies.find(c => c.id === companyId);
+                if(comp) compName = comp.name;
+            }
+
             if (currentUser.role === 'insider') {
                 effectiveRole = (companyId === currentUser.companyId) ? 'insider' : 'citizen';
             }
 
             if (currentUser.role === 'gov' && isAnnounce) {
                 if (!state.govAnnouncements) state.govAnnouncements = [];
-                state.govAnnouncements.unshift(`[${state.day}일자 공지] ${text}`);
+                const targetLabel = companyId ? `[${compName} 관련]` : `[전체 시장]`;
+                state.govAnnouncements.unshift(`[${state.day}일자 공지] ${targetLabel} ${text}`);
                 state.publicNews.unshift({
                     day: state.day,
-                    title: `🚨 [정부 긴급발표] 정책 공지사항`,
+                    title: `🚨 [정부 긴급발표] ${targetLabel} 정책 공지`,
                     content: text
                 });
             }
 
-            const comp = state.companies.find(c => c.id === companyId);
             state.pendingInterviews.push({
-                author: currentUser.name, role: effectiveRole, text, companyId, compName: comp.name, status: 'unverified' 
+                author: currentUser.name, role: effectiveRole, text, companyId, compName: compName, status: 'unverified' 
             });
 
             alert("제보가 전송되었습니다.");
             document.getElementById('interview-text').value = '';
-            document.getElementById('is-announcement').checked = false;
+            if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
             saveState();
             updateUI();
         }
 
-        // --- 이하 타임머신, AI처리, 기업/유저 관리 등은 동일합니다 ---
         function jumpToSpecificDay() {
             const target = parseInt(document.getElementById('jump-day-input').value);
             if (!target || target < 1 || target >= state.day) return alert("현재보다 이전 날짜로만 이동할 수 있습니다.");
@@ -452,7 +456,13 @@
                     </div>`;
             });
             
-            document.getElementById('target-company').innerHTML = state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            // 공무원일 경우 드롭다운에 '전체 시장' 옵션 추가
+            let optionsHtml = '';
+            if (currentUser && currentUser.role === 'gov') {
+                optionsHtml += `<option value="all">🌐 전체 시장 (기업 미지정)</option>`;
+            }
+            optionsHtml += state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            document.getElementById('target-company').innerHTML = optionsHtml;
             updateInterviewPlaceholder(); 
         }
 
@@ -492,14 +502,37 @@
             }
         }
 
+        // --- 그래프 범례 (Legend) 활성화 변경 ---
         function updateChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
             const labels = Array.from({length: state.day}, (_, i) => `D${i+1}`);
             const datasets = state.companies.map((c, i) => ({
-                label: c.name, data: c.history, borderColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'][i % 5], tension: 0.3
+                label: c.name, 
+                data: c.history, 
+                borderColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'][i % 5], 
+                backgroundColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'][i % 5], 
+                tension: 0.3
             }));
+            
             if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: { responsive: true, plugins: { legend: { display: false } } } });
+            
+            chartInstance = new Chart(ctx, { 
+                type: 'line', 
+                data: { labels, datasets }, 
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            position: 'bottom', // 그래프 아래쪽에 범례 표시
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11, family: "'Pretendard', sans-serif" }
+                            }
+                        } 
+                    } 
+                } 
+            });
         }
 
         function renderModerationList() {
