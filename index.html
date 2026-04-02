@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v8.4</title>
+    <title>클래스 스탁 하이퍼 v8.4 (뉴스 피드 개선판)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -35,12 +35,13 @@
         </div>
 
         <div class="container mx-auto p-4 max-w-7xl flex-1">
-            <header class="flex justify-between items-center mb-6 border-b pb-4">
+            <header class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
                 <div>
                     <h1 class="text-2xl font-black text-slate-800">📊 MARKET <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm ml-2">Day <span id="current-day">1</span></span></h1>
                     <p class="text-xs text-slate-500 mt-1">접속: <span id="current-user-name" class="font-bold"></span> | 신분: <span id="current-user-role-display"></span></p>
                 </div>
                 <div class="flex gap-2">
+                    <button onclick="changeMyPassword()" class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100">비밀번호 변경</button>
                     <button onclick="logout()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">로그아웃</button>
                 </div>
             </header>
@@ -79,7 +80,7 @@
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm h-80 flex flex-col border border-slate-100">
                         <h2 class="text-lg font-bold mb-4">📰 AI 경제 뉴스 피드</h2>
-                        <div id="public-news-feed" class="flex-1 overflow-y-auto space-y-3 text-sm scrollbar-hide"></div>
+                        <div id="public-news-feed" class="flex-1 overflow-y-auto space-y-3 text-sm scrollbar-hide pr-2"></div>
                     </div>
                 </div>
             </div>
@@ -124,7 +125,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div class="bg-white p-5 rounded-xl shadow-sm">
-                        <h3 class="font-bold text-rose-700 mb-3">👥 학생 관리</h3>
+                        <h3 class="font-bold text-rose-700 mb-3">👥 학생 계정 관리</h3>
                         <div class="flex flex-wrap gap-2 mb-4">
                             <input type="text" id="new-user-id" placeholder="ID" class="border p-2 rounded text-xs w-20">
                             <input type="text" id="new-user-name" placeholder="이름" class="border p-2 rounded text-xs w-20">
@@ -134,18 +135,32 @@
                                 <option value="gov">공무원</option>
                             </select>
                             <select id="new-user-company" class="border p-2 rounded text-xs hidden"></select>
-                            <button onclick="addUser()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">추가</button>
+                            <button onclick="addUser()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">계정 생성</button>
                         </div>
-                        <div class="max-h-32 overflow-y-auto border-t"><table class="w-full text-[11px]"><tbody id="user-list-tbody"></tbody></table></div>
+                        <div class="max-h-40 overflow-y-auto border-t">
+                            <table class="w-full text-xs text-center border-collapse">
+                                <thead>
+                                    <tr class="border-b bg-slate-50"><th class="py-2">ID (이름)</th><th class="py-2">역할</th><th class="py-2">관리</th></tr>
+                                </thead>
+                                <tbody id="user-list-tbody" class="divide-y text-slate-600"></tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm">
-                        <h3 class="font-bold text-rose-700 mb-3">🏢 기업 관리</h3>
+                        <h3 class="font-bold text-rose-700 mb-3">🏢 상장 기업 관리</h3>
                         <div class="flex gap-2 mb-4">
                             <input type="text" id="new-company-name" placeholder="기업명" class="border p-2 rounded text-xs flex-1">
                             <input type="number" id="new-company-price" placeholder="주가" class="border p-2 rounded text-xs w-20">
-                            <button onclick="addCompany()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">상장</button>
+                            <button onclick="addCompany()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">신규 상장</button>
                         </div>
-                        <div class="max-h-32 overflow-y-auto border-t"><table class="w-full text-[11px]"><tbody id="company-admin-tbody"></tbody></table></div>
+                        <div class="max-h-40 overflow-y-auto border-t">
+                            <table class="w-full text-xs text-center border-collapse">
+                                <thead>
+                                    <tr class="border-b bg-slate-50"><th class="py-2">기업명</th><th class="py-2">현재가</th><th class="py-2">관리</th></tr>
+                                </thead>
+                                <tbody id="company-admin-tbody" class="divide-y text-slate-600"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,7 +203,6 @@
             let roleLabel = currentUser.role === 'teacher' ? "중앙은행장" : (currentUser.role === 'gov' ? "정부 공무원" : (currentUser.role === 'insider' ? "내부자" : "일반 시민"));
             document.getElementById('current-user-role-display').innerText = roleLabel;
 
-            // 역할별 화면 조정
             if (currentUser.role === 'teacher') {
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('gemini-api-key').value = state.apiKey || "";
@@ -207,7 +221,6 @@
         function updateUI() {
             document.getElementById('current-day').innerText = state.day;
             
-            // 전광판 업데이트 (정부 정책 우선 노출)
             const marquee = document.getElementById('macro-news-display');
             if (state.govAnnouncements && state.govAnnouncements.length > 0) {
                 marquee.innerText = `🔥 긴급 정책 발표: ${state.govAnnouncements[0]} 🔥 | 시장 지표: ${state.macroNewsText}`;
@@ -233,7 +246,12 @@
             if (currentUser.role === 'gov' && isAnnounce) {
                 if (!state.govAnnouncements) state.govAnnouncements = [];
                 state.govAnnouncements.unshift(`[${state.day}일자 공지] ${text}`);
-                state.publicNews.unshift(`[정부 긴급발표] ${text}`);
+                // 공지도 뉴스 피드 형식에 맞게 객체로 저장
+                state.publicNews.unshift({
+                    day: state.day,
+                    title: `🚨 [정부 긴급발표] 정책 공지사항`,
+                    content: text
+                });
             }
 
             const comp = state.companies.find(c => c.id === companyId);
@@ -248,7 +266,6 @@
             updateUI();
         }
 
-        // --- 시간 이동 기능 (UI 새로고침 방식으로 변경) ---
         function jumpToSpecificDay() {
             const target = parseInt(document.getElementById('jump-day-input').value);
             if (!target || target < 1 || target >= state.day) return alert("현재보다 이전 날짜로만 이동할 수 있습니다.");
@@ -261,25 +278,36 @@
                 c.price = c.history[c.history.length - 1];
             });
             state.publicNews = state.publicNews.filter(n => {
-                const m = n.match(/Day (\d+)/);
-                return m ? parseInt(m[1]) < target : true;
+                // 이전 기록(문자열)과 현재 기록(객체) 모두 처리
+                const nDay = typeof n === 'object' ? n.day : parseInt((n.match(/Day (\d+)/) || [0, 0])[1]);
+                return nDay < target;
             });
             state.pendingInterviews = [];
             state.govAnnouncements = [];
             state.macroNewsText = "시간 여행으로 시장 데이터가 복구되었습니다.";
             saveState();
-            updateUI(); // 새로고침 대신 UI 즉시 반영
+            updateUI();
             alert(`Day ${target}(으)로 성공적으로 이동했습니다.`);
         }
 
         function resetToDayOne() {
             if (confirm("모든 데이터를 지우고 Day 1으로 초기화하시겠습니까?")) {
                 localStorage.removeItem('classStockState');
-                location.reload(); // 완전 초기화 시에만 페이지 새로고침
+                location.reload(); 
             }
         }
 
-        // --- AI 시장 마감 로직 (Gemini 3.1 Flash Lite Preview & 로그아웃 방지) ---
+        function changeMyPassword() {
+            const newPw = prompt("새로운 비밀번호를 입력하세요:");
+            if (newPw && newPw.trim() !== "") {
+                const user = state.users.find(u => u.id === currentUser.id);
+                user.pw = newPw.trim();
+                saveState();
+                alert("비밀번호가 성공적으로 변경되었습니다.");
+            }
+        }
+
+        // --- AI API 관련 부분: 통신 로직은 절대 건드리지 않고, 질문지(prompt) 내용만 수정했습니다 ---
         async function processNextDay() {
             const btn = document.getElementById('process-day-btn');
             btn.disabled = true;
@@ -294,10 +322,12 @@
                 applyRandomMovement();
             } else {
                 try {
+                    // 통신 코드는 그대로 유지! AI에게 5줄 이상, 초6 맞춤, 제목 분리를 지시하는 프롬프트만 변경
                     const prompt = `당신은 경제 시뮬레이터입니다. 아래 제보들을 바탕으로 기업별 주가 변동률과 시장 뉴스 2개를 JSON으로만 답하세요. 
+                    - 뉴스 작성 조건: 초등학교 6학년이 이해하기 쉬운 경제 용어를 사용하여, 5줄 이상의 뉴스 기사 형식으로 상세하고 재밌게 작성해주세요.
                     - 제보: ${newsString || "없음"}
                     - 기업: ${companiesString}
-                    - 응답형식: {"news": ["뉴스1", "뉴스2"], "changes": [{"id": 1, "pct": 5.5}]}`;
+                    - 응답형식: {"news": [{"title": "뉴스 기사 제목", "content": "뉴스 기사 상세 내용 (5줄 이상)"}], "changes": [{"id": 1, "pct": 5.5}]}`;
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${state.apiKey}`, {
                         method: 'POST',
@@ -318,8 +348,16 @@
                             target.history.push(target.price);
                         }
                     });
-                    result.news.forEach(n => state.publicNews.unshift(`[Day ${state.day}] ${n}`));
-                    state.macroNewsText = result.news[0];
+                    
+                    // 뉴스를 객체 형태로 저장 (제목, 내용 분리)
+                    result.news.forEach(n => {
+                        state.publicNews.unshift({
+                            day: state.day,
+                            title: n.title,
+                            content: n.content
+                        });
+                    });
+                    state.macroNewsText = result.news[0].title;
                 } catch (e) {
                     console.error(e);
                     alert("AI 처리 중 오류가 발생하여 무작위 모델을 가동합니다: " + e.message);
@@ -327,13 +365,11 @@
                 }
             }
 
-            // 상태 업데이트
             state.day++;
             state.pendingInterviews = [];
-            state.govAnnouncements = []; // 정책 초기화
+            state.govAnnouncements = []; 
             saveState();
             
-            // UI를 페이지 새로고침 없이 동적 업데이트
             btn.disabled = false;
             btn.innerText = "시 마감 및 AI 분석 실행";
             updateUI();
@@ -347,11 +383,15 @@
                 c.price = Math.round(c.price * move);
                 c.history.push(c.price);
             });
-            state.publicNews.unshift(`[Day ${state.day}] 시장이 특별한 뉴스 없이 마감되었습니다.`);
+            // 무작위 변동 시에도 새로운 기사 형식에 맞춰서 저장
+            state.publicNews.unshift({
+                day: state.day,
+                title: "시장이 특별한 뉴스 없이 마감되었습니다.",
+                content: "오늘은 특별한 경제적 이슈 없이 시장이 아주 평온하게 마무리되었습니다.\n투자자들은 다음 날의 변화를 기다리며 휴식을 취하고 있답니다.\n각 기업의 주가도 큰 변동 없이 튼튼하고 안정적인 모습을 보였습니다.\n내일은 또 어떤 재미있고 새로운 경제 제보가 들어올지 다같이 기대해 봅시다.\n현명한 투자를 위해 항상 경제 뉴스를 꼼꼼히 살펴보는 습관을 가져보세요!"
+            });
             state.macroNewsText = "전반적인 시장 흐름이 보합세를 유지 중입니다.";
         }
 
-        // --- 보조 함수들 ---
         function renderCompanies() {
             const list = document.getElementById('company-list');
             list.innerHTML = '';
@@ -363,22 +403,56 @@
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <div class="text-xs font-bold text-slate-400 mb-1">${c.name}</div>
                         <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}원</div>
-                        <div class="text-[10px] font-bold ${color}">${diff > 0 ? '▲' : '▼'} ${Math.abs(diff).toLocaleString()}</div>
+                        <div class="text-[10px] font-bold ${color}">${diff > 0 ? '▲' : (diff < 0 ? '▼' : '-')} ${Math.abs(diff).toLocaleString()}</div>
                     </div>`;
             });
             document.getElementById('target-company').innerHTML = state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         }
 
+        // --- 아코디언 형식(접기/펴기)으로 완전히 개편된 뉴스 피드 렌더링 ---
         function renderNews() {
             const feed = document.getElementById('public-news-feed');
-            feed.innerHTML = state.publicNews.length > 0 ? state.publicNews.map(n => `<div class="p-3 bg-slate-50 rounded-lg border-l-4 border-indigo-500">● ${n}</div>`).join('') : '<p class="text-slate-300 text-center py-10">아직 뉴스가 없습니다.</p>';
+            if(state.publicNews.length === 0) {
+                feed.innerHTML = '<p class="text-slate-300 text-center py-10">아직 뉴스가 없습니다.</p>';
+                return;
+            }
+            feed.innerHTML = state.publicNews.map((n, idx) => {
+                // 이전 데이터(문자열)와 현재 데이터(객체) 호환성 처리
+                const isObject = typeof n === 'object';
+                const titleText = isObject ? `[Day ${n.day}] ${n.title}` : (n.length > 30 ? n.substring(0, 30) + '...' : n);
+                // 기사 내용의 줄바꿈(\n)을 HTML 줄바꿈(<br>)으로 변환
+                const contentText = isObject ? n.content.replace(/\n/g, '<br>') : n;
+
+                return `
+                <div class="p-4 bg-slate-50 rounded-lg border-l-4 border-indigo-500 cursor-pointer hover:bg-slate-100 transition shadow-sm" onclick="toggleNews(${idx})">
+                    <div class="flex justify-between items-center text-sm font-bold text-indigo-800">
+                        <span>📰 ${titleText}</span>
+                        <span id="news-icon-${idx}" class="text-xs text-slate-400 font-normal">▼</span>
+                    </div>
+                    <div id="news-full-${idx}" class="hidden mt-3 pt-3 border-t border-slate-200 text-sm text-slate-600 leading-loose">
+                        ${contentText}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleNews(idx) {
+            const fullContent = document.getElementById(`news-full-${idx}`);
+            const icon = document.getElementById(`news-icon-${idx}`);
+            if (fullContent && fullContent.classList.contains('hidden')) {
+                fullContent.classList.remove('hidden');
+                icon.innerText = '▲';
+            } else if (fullContent) {
+                fullContent.classList.add('hidden');
+                icon.innerText = '▼';
+            }
         }
 
         function updateChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
             const labels = Array.from({length: state.day}, (_, i) => `D${i+1}`);
             const datasets = state.companies.map((c, i) => ({
-                label: c.name, data: c.history, borderColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b'][i % 4], tension: 0.3
+                label: c.name, data: c.history, borderColor: ['#6366f1', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6'][i % 5], tension: 0.3
             }));
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: { responsive: true, plugins: { legend: { display: false } } } });
@@ -398,25 +472,97 @@
 
         function setFact(idx, status) { state.pendingInterviews[idx].status = status; saveState(); renderModerationList(); }
         function saveApiKey() { state.apiKey = document.getElementById('gemini-api-key').value; saveState(); alert("저장되었습니다."); }
+        
         function addUser() {
-            const id = document.getElementById('new-user-id').value;
-            const name = document.getElementById('new-user-name').value;
+            const id = document.getElementById('new-user-id').value.trim();
+            const name = document.getElementById('new-user-name').value.trim();
             const role = document.getElementById('new-user-role').value;
             const companyId = document.getElementById('new-user-company').value;
+            if(!id || !name) return alert("아이디와 이름을 모두 입력해주세요.");
+            if(state.users.find(u => u.id === id)) return alert("이미 존재하는 아이디입니다.");
+            
             state.users.push({ id, pw: '1234', name, role, companyId });
             saveState(); renderAdminTables();
+            document.getElementById('new-user-id').value = '';
+            document.getElementById('new-user-name').value = '';
+            alert("학생 계정이 생성되었습니다. (초기 비밀번호: 1234)");
         }
+
+        function deleteUser(id) {
+            if (id === 'teacher') return alert("중앙은행장(선생님) 계정은 삭제할 수 없습니다.");
+            if (confirm("해당 학생 계정을 영구 삭제하시겠습니까?")) {
+                state.users = state.users.filter(u => u.id !== id);
+                saveState(); renderAdminTables();
+            }
+        }
+
+        function resetUserPw(id) {
+            if (confirm("이 학생의 비밀번호를 '1234'로 초기화하시겠습니까?")) {
+                const user = state.users.find(u => u.id === id);
+                if (user) { user.pw = '1234'; saveState(); alert("초기화 완료되었습니다."); }
+            }
+        }
+
         function addCompany() {
-            const name = document.getElementById('new-company-name').value;
+            const name = document.getElementById('new-company-name').value.trim();
             const price = parseInt(document.getElementById('new-company-price').value);
+            if(!name || isNaN(price)) return alert("기업명과 주가를 올바르게 입력해주세요.");
+            
             state.companies.push({ id: Date.now(), name, price, history: Array(state.day).fill(price) });
-            saveState(); renderAdminTables(); renderCompanies();
+            saveState(); renderAdminTables(); renderCompanies(); updateChart();
+            document.getElementById('new-company-name').value = '';
+            document.getElementById('new-company-price').value = '';
         }
+
+        function editCompany(id) {
+            const comp = state.companies.find(c => c.id === id);
+            const newName = prompt("수정할 기업명을 입력하세요:", comp.name);
+            if(newName === null) return;
+            const newPrice = prompt("수정할 주가를 입력하세요 (숫자만):", comp.price);
+            if(newPrice === null) return;
+
+            if (newName.trim() !== "" && !isNaN(newPrice)) {
+                comp.name = newName.trim();
+                comp.price = parseInt(newPrice);
+                comp.history[comp.history.length - 1] = comp.price; 
+                saveState(); renderAdminTables(); renderCompanies(); updateChart();
+            } else {
+                alert("올바른 값을 입력해주세요.");
+            }
+        }
+
+        function deleteCompany(id) {
+            if (state.companies.length <= 1) return alert("최소 1개의 상장 기업은 유지해야 합니다.");
+            if (confirm("정말 이 기업을 상장 폐지(삭제)하시겠습니까? 관련 데이터가 모두 삭제됩니다.")) {
+                state.companies = state.companies.filter(c => c.id !== id);
+                saveState(); renderAdminTables(); renderCompanies(); updateChart();
+            }
+        }
+
         function renderAdminTables() {
-            document.getElementById('user-list-tbody').innerHTML = state.users.map(u => `<tr><td>${u.name}</td><td>${u.role}</td></tr>`).join('');
-            document.getElementById('company-admin-tbody').innerHTML = state.companies.map(c => `<tr><td>${c.name}</td><td>${c.price}원</td></tr>`).join('');
+            document.getElementById('user-list-tbody').innerHTML = state.users.map(u => `
+                <tr>
+                    <td class="py-2">${u.id} (${u.name})</td>
+                    <td class="py-2">${u.role === 'teacher' ? '선생님' : (u.role === 'gov' ? '공무원' : (u.role === 'insider' ? '내부자' : '시민'))}</td>
+                    <td class="py-2">
+                        <button onclick="resetUserPw('${u.id}')" class="bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] hover:bg-slate-300">PW초기화</button>
+                        <button onclick="deleteUser('${u.id}')" class="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] hover:bg-red-200 ml-1">삭제</button>
+                    </td>
+                </tr>`).join('');
+                
+            document.getElementById('company-admin-tbody').innerHTML = state.companies.map(c => `
+                <tr>
+                    <td class="py-2">${c.name}</td>
+                    <td class="py-2">${c.price.toLocaleString()}원</td>
+                    <td class="py-2">
+                        <button onclick="editCompany(${c.id})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px] hover:bg-blue-200">수정</button>
+                        <button onclick="deleteCompany(${c.id})" class="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] hover:bg-red-200 ml-1">삭제</button>
+                    </td>
+                </tr>`).join('');
+                
             document.getElementById('new-user-company').innerHTML = state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         }
+        
         function toggleCompanySelect() { document.getElementById('new-user-company').classList.toggle('hidden', document.getElementById('new-user-role').value !== 'insider'); }
 
     </script>
