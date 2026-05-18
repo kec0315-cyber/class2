@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v8.95 (보름달국 경제 시뮬레이터)</title>
+    <title>클래스 스탁 하이퍼 v8.96 (보름달국 경제 시뮬레이터)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,8 +11,8 @@
         .marquee { overflow: hidden; white-space: nowrap; box-sizing: border-box; }
         .marquee p { display: inline-block; padding-left: 100%; animation: marquee 25s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-        .announcement-banner { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -20,7 +20,7 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
             <h1 class="text-3xl font-black text-center text-indigo-600 mb-2">FULLMOON STOCK</h1>
-            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.95</p>
+            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.96</p>
             <div class="space-y-4">
                 <input type="text" id="login-id" placeholder="아이디" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="password" id="login-pw" placeholder="비밀번호" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400" onkeypress="if(event.key === 'Enter') login()">
@@ -68,9 +68,20 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-indigo-600">
                         <h2 class="text-lg font-bold mb-4">🎤 정보 제보 및 직업 의견</h2>
                         <div class="space-y-4">
-                            <select id="target-company" class="w-full border border-slate-200 rounded-lg p-2 text-sm" onchange="updateInterviewPlaceholder()"></select>
                             
-                            <textarea id="interview-text" rows="4" class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></textarea>
+                            <div id="persona-selection" class="hidden flex flex-wrap gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200 items-center">
+                                <span class="text-xs font-bold text-slate-500">발언 신분:</span>
+                                <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                    <input type="radio" name="persona" value="citizen" checked onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 👤 일반 시민
+                                </label>
+                                <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                    <input type="radio" name="persona" value="employee" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏢 소속 기업 내부자
+                                </label>
+                            </div>
+
+                            <select id="target-company" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white" onchange="updateInterviewPlaceholder()"></select>
+                            
+                            <textarea id="interview-text" rows="4" class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-400 outline-none transition"></textarea>
                             
                             <div id="gov-announcement-box" class="hidden bg-red-50 p-3 rounded-lg border border-red-100">
                                 <label class="flex items-center gap-2 cursor-pointer">
@@ -79,7 +90,7 @@
                                 </label>
                             </div>
 
-                            <button onclick="submitInterview()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">제보 전송하기</button>
+                            <button onclick="submitInterview()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">제보 전송하기</button>
                         </div>
                     </div>
 
@@ -111,12 +122,12 @@
                             <div>
                                 <label class="text-xs font-bold text-slate-400">Gemini API Key</label>
                                 <div class="flex gap-2 mt-1">
-                                    <input type="password" id="gemini-api-key" placeholder="API 키 입력" class="flex-1 border p-2 rounded-lg text-sm">
-                                    <button onclick="saveApiKey()" class="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold">저장</button>
+                                    <input type="password" id="gemini-api-key" placeholder="API 키 입력" class="flex-1 border p-2 rounded-lg text-sm bg-slate-50 focus:bg-white">
+                                    <button onclick="saveApiKey()" class="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold hover:bg-slate-700">저장</button>
                                 </div>
                             </div>
                             
-                            <div class="pt-4 border-t">
+                            <div class="pt-4 border-t border-slate-100">
                                 <label class="text-xs font-bold text-amber-600">🏦 국가 기준금리 입력 (%)</label>
                                 <input type="number" step="0.1" id="base-rate-input" placeholder="예: 2.0" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-amber-400 outline-none">
                             </div>
@@ -125,12 +136,12 @@
                                 <textarea id="macro-context-input" rows="2" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="예: 상위 국가(학교) 차원의 특정 행사, 의회 법안 통과 등"></textarea>
                             </div>
 
-                            <div class="pt-4 border-t">
+                            <div class="pt-4 border-t border-slate-100">
                                 <label class="text-xs font-bold text-slate-400">⏱️ 타임머신 (날짜 강제 이동)</label>
                                 <div class="flex gap-2 mt-1">
-                                    <input type="number" id="jump-day-input" placeholder="Day" class="w-24 border p-2 rounded-lg text-sm">
-                                    <button onclick="jumpToSpecificDay()" class="bg-blue-600 text-white px-3 rounded-lg text-xs font-bold">복구</button>
-                                    <button onclick="resetToDayOne()" class="bg-red-600 text-white px-3 rounded-lg text-xs font-bold">리셋</button>
+                                    <input type="number" id="jump-day-input" placeholder="Day" class="w-24 border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                                    <button onclick="jumpToSpecificDay()" class="bg-blue-600 text-white px-3 rounded-lg text-xs font-bold hover:bg-blue-700">복구</button>
+                                    <button onclick="resetToDayOne()" class="bg-red-600 text-white px-3 rounded-lg text-xs font-bold hover:bg-red-700">리셋</button>
                                 </div>
                             </div>
                         </div>
@@ -139,33 +150,33 @@
                     <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
                         <h3 class="font-bold text-rose-700 mb-2">🚀 오늘 보름달국 시장 마감</h3>
                         <p class="text-xs text-slate-500 mb-4">마감 시 AI가 다음 턴의 주가 변동률과 새로운 은행 예금 추천 금리를 분석해 내며, 행정부 장관(교사) 결재 후 적용됩니다.</p>
-                        <button id="process-day-btn" onclick="processNextDay()" class="w-full py-6 bg-rose-600 text-white rounded-xl font-black text-xl hover:bg-rose-700 transition shadow-lg">턴 마감 및 AI 분석 가동</button>
+                        <button id="process-day-btn" onclick="processNextDay()" class="w-full py-6 bg-rose-600 text-white rounded-xl font-black text-xl hover:bg-rose-700 transition shadow-lg transform hover:scale-[1.02]">턴 마감 및 AI 분석 가동</button>
                     </div>
                 </div>
 
                 <div class="bg-white p-5 rounded-xl shadow-sm mb-6">
                     <h3 class="font-bold text-rose-700 mb-4">🔍 실시간 제보 모니터링 (가짜뉴스 팩트체크)</h3>
-                    <div id="moderation-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
+                    <div id="moderation-list" class="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-hide"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-rose-700 mb-3">👥 국민(학생) 계정 관리</h3>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <input type="text" id="new-user-id" placeholder="ID" class="border p-2 rounded text-xs w-16">
-                            <input type="text" id="new-user-name" placeholder="이름" class="border p-2 rounded text-xs w-16">
-                            <select id="new-user-role" onchange="toggleCompanySelect()" class="border p-2 rounded text-xs">
+                            <input type="text" id="new-user-id" placeholder="ID" class="border p-2 rounded text-xs w-16 outline-none focus:border-green-400">
+                            <input type="text" id="new-user-name" placeholder="이름" class="border p-2 rounded text-xs w-16 outline-none focus:border-green-400">
+                            <select id="new-user-role" onchange="toggleCompanySelect()" class="border p-2 rounded text-xs bg-white outline-none focus:border-green-400">
                                 <option value="citizen">시민</option>
                                 <option value="employee">기업 직원</option>
                                 <option value="gov">공무원</option>
                             </select>
-                            <select id="new-user-company" class="border p-2 rounded text-xs hidden w-20"></select>
-                            <button onclick="addUser()" class="bg-green-600 text-white px-2 py-2 rounded text-xs font-bold">생성</button>
+                            <select id="new-user-company" class="border p-2 rounded text-xs hidden w-20 bg-white outline-none focus:border-green-400"></select>
+                            <button onclick="addUser()" class="bg-green-600 text-white px-2 py-2 rounded text-xs font-bold hover:bg-green-700 shadow-sm">생성</button>
                         </div>
-                        <div class="max-h-40 overflow-y-auto border-t">
+                        <div class="max-h-40 overflow-y-auto border-t border-slate-100 scrollbar-hide">
                             <table class="w-full text-xs text-center border-collapse">
                                 <thead>
-                                    <tr class="border-b bg-slate-50"><th class="py-2">ID(이름)</th><th class="py-2">직업</th><th class="py-2">관리</th></tr>
+                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">ID(이름)</th><th class="py-2 text-slate-500">직업</th><th class="py-2 text-slate-500">관리</th></tr>
                                 </thead>
                                 <tbody id="user-list-tbody" class="divide-y text-slate-600"></tbody>
                             </table>
@@ -174,14 +185,14 @@
                     <div class="bg-white p-5 rounded-xl shadow-sm">
                         <h3 class="font-bold text-rose-700 mb-3">🏢 보름달국 기업 관리</h3>
                         <div class="flex gap-2 mb-4">
-                            <input type="text" id="new-company-name" placeholder="기업명" class="border p-2 rounded text-xs flex-1">
-                            <input type="number" id="new-company-price" placeholder="주가" class="border p-2 rounded text-xs w-20">
-                            <button onclick="addCompany()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">신규 상장</button>
+                            <input type="text" id="new-company-name" placeholder="기업명" class="border p-2 rounded text-xs flex-1 outline-none focus:border-green-400">
+                            <input type="number" id="new-company-price" placeholder="주가" class="border p-2 rounded text-xs w-20 outline-none focus:border-green-400">
+                            <button onclick="addCompany()" class="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold hover:bg-green-700 shadow-sm">신규 상장</button>
                         </div>
-                        <div class="max-h-40 overflow-y-auto border-t">
+                        <div class="max-h-40 overflow-y-auto border-t border-slate-100 scrollbar-hide">
                             <table class="w-full text-xs text-center border-collapse">
                                 <thead>
-                                    <tr class="border-b bg-slate-50"><th class="py-2">기업명</th><th class="py-2">현재가</th><th class="py-2">관리</th></tr>
+                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">기업명</th><th class="py-2 text-slate-500">현재가</th><th class="py-2 text-slate-500">관리</th></tr>
                                 </thead>
                                 <tbody id="company-admin-tbody" class="divide-y text-slate-600"></tbody>
                             </table>
@@ -193,10 +204,12 @@
     </div>
 
     <div id="preview-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border-4 border-indigo-500">
-            <div class="bg-indigo-600 text-white p-4">
-                <h2 class="text-xl font-black flex items-center gap-2">👀 다음 회차 변동 지표 검토 (장관 결재)</h2>
-                <p class="text-indigo-200 text-xs mt-1">AI가 조율한 자산 변동 결과를 확인하고 승인해주세요.</p>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border-4 border-indigo-500 transform transition-all scale-100">
+            <div class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black flex items-center gap-2">👀 다음 회차 변동 지표 검토 (장관 결재)</h2>
+                    <p class="text-indigo-200 text-xs mt-1">AI가 조율한 자산 변동 결과를 확인하고 승인해주세요.</p>
+                </div>
             </div>
             
             <div id="preview-content" class="p-6 overflow-y-auto flex-1 space-y-6 text-sm text-slate-700 bg-slate-50">
@@ -229,10 +242,8 @@
             depositRateReasoning: "보름달국 경제 국가 시스템이 가동되었습니다. 초기 설정된 기준금리를 바탕으로 자산 거품을 예방하고 저축 성향을 장려할 수 있는 안전율이 적용된 수치입니다."
         };
 
-        // 기존 로컬스토리지에 insider 로 저장된 유저들을 employee로 일괄 변환 (호환성 유지)
-        state.users.forEach(u => {
-            if (u.role === 'insider') u.role = 'employee';
-        });
+        // 데이터 마이그레이션 (과거 버전 호환)
+        state.users.forEach(u => { if (u.role === 'insider') u.role = 'employee'; });
 
         let teacherAccount = state.users.find(u => u.id === 'teacher');
         if (teacherAccount && !state.isEmergencyTeacherPwResetDone) {
@@ -294,6 +305,13 @@
                 document.getElementById('gov-announcement-box').classList.remove('hidden');
             }
 
+            // 직원(내부자)일 경우에만 신분 선택 라디오 버튼 표시
+            if (currentUser.role === 'employee') {
+                document.getElementById('persona-selection').classList.remove('hidden');
+            } else {
+                document.getElementById('persona-selection').classList.add('hidden');
+            }
+
             updateUI();
         }
 
@@ -326,18 +344,42 @@
             if (!currentUser) return;
             const ta = document.getElementById('interview-text');
             const dropdown = document.getElementById('target-company');
+            
+            let selectedPersona = 'citizen';
+            
+            if (currentUser.role === 'employee') {
+                const radios = document.getElementsByName('persona');
+                for (let r of radios) { if (r.checked) selectedPersona = r.value; }
+                
+                // 내부자 모드 선택 시 자기 소속 기업으로 드롭다운 고정
+                if (selectedPersona === 'employee') {
+                    dropdown.value = currentUser.companyId;
+                    dropdown.disabled = true;
+                    dropdown.classList.add('bg-slate-100', 'text-indigo-700', 'font-bold');
+                } else {
+                    dropdown.disabled = false;
+                    dropdown.classList.remove('bg-slate-100', 'text-indigo-700', 'font-bold');
+                }
+            } else if (currentUser.role === 'gov') {
+                selectedPersona = 'gov';
+                dropdown.disabled = false;
+            } else if (currentUser.role === 'teacher') {
+                selectedPersona = 'teacher';
+                dropdown.disabled = false;
+            }
+
             const targetName = dropdown.options[dropdown.selectedIndex]?.text || "이 기업";
             const targetCompanyId = dropdown.value; 
 
-            let effectiveRole = currentUser.role;
-            if (currentUser.role === 'employee') {
-                effectiveRole = (parseInt(targetCompanyId) === currentUser.companyId) ? 'employee' : 'citizen';
+            if (selectedPersona === 'citizen' || currentUser.role === 'citizen') {
+                ta.placeholder = `보름달국 국민으로서 [${targetName}]에 제안하거나 제보할 시장 동향을 적어주세요.`;
+            } else if (selectedPersona === 'employee') {
+                ta.placeholder = `[${targetName}] 기업 소속 직원으로서 내부 동향이나 향후 실적 예측을 기밀 제보합니다. (가상의 사장님 대신 직원으로서 핵심 정보 제공!)`;
+            } else if (selectedPersona === 'gov') {
+                ta.placeholder = targetCompanyId === 'all' ? `거시적인 보름달국 국정 운영 및 통화 정책 공식 입장을 수립하세요.` : `[${targetName}] 기업의 경영 안정화를 위한 규제 및 지원 행정명령을 작성하세요.`;
+            } else {
+                ta.placeholder = "시장에 전달할 원인 요소들을 기입하세요...";
             }
-
-            if (effectiveRole === 'citizen') ta.placeholder = `보름달국 국민으로서 [${targetName}]에 제안하거나 제보할 시장 동향을 적어주세요.`;
-            else if (effectiveRole === 'employee') ta.placeholder = `[${targetName}] 기업 소속 직원으로서 내부 동향이나 향후 실적 예측을 제보합니다. (가상의 사장님 대신 직원으로서 정보 제공!)`;
-            else if (effectiveRole === 'gov') ta.placeholder = targetCompanyId === 'all' ? `거시적인 보름달국 국정 운영 및 통화 정책 공식 입장을 수립하세요.` : `[${targetName}] 기업의 경영 안정화를 위한 규제 및 지원 행정명령을 작성하세요.`;
-            else ta.placeholder = "시장에 전달할 원인 요소들을 기입하세요...";
         }
 
         function submitInterview() {
@@ -348,6 +390,11 @@
             if (!text) return alert("내용을 입력하세요.");
 
             let effectiveRole = currentUser.role;
+            if (currentUser.role === 'employee') {
+                const radios = document.getElementsByName('persona');
+                for (let r of radios) { if (r.checked) effectiveRole = r.value; }
+            }
+
             let companyId = companyIdValue === 'all' ? null : parseInt(companyIdValue);
             let compName = "전체 시장";
             
@@ -355,7 +402,6 @@
                 const comp = state.companies.find(c => c.id === companyId);
                 if(comp) compName = comp.name;
             }
-            if (currentUser.role === 'employee') effectiveRole = (companyId === currentUser.companyId) ? 'employee' : 'citizen';
 
             if (currentUser.role === 'gov' && isAnnounce) {
                 if (!state.govAnnouncements) state.govAnnouncements = [];
@@ -366,7 +412,12 @@
 
             state.pendingInterviews.push({ author: currentUser.name, role: effectiveRole, text, companyId, compName: compName, status: 'unverified' });
 
-            alert("중앙 본부 모니터링 시스템으로 제보가 이송되었습니다.");
+            const alertMsg = effectiveRole === 'employee' ? 
+                `[내부 기밀 제보 접수] ${compName}의 핵심 동향이 모니터링 시스템으로 이송되었습니다.` : 
+                `[시민 의견 접수] 중앙 본부 모니터링 시스템으로 제보가 이송되었습니다.`;
+
+            alert(alertMsg);
+            
             document.getElementById('interview-text').value = '';
             if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
             saveState(); updateUI();
@@ -385,7 +436,8 @@
             const interviews = state.pendingInterviews.filter(i => i.status !== 'false');
             const newsString = interviews.map(i => {
                 const statusLabel = i.status === 'true' ? '[팩트체크: 실제 정보]' : '[팩트체크: 검증안된 루머]';
-                return `${statusLabel} [${i.role}] ${i.compName}: ${i.text}`;
+                const roleLabel = i.role === 'employee' ? '[내부자 정보]' : (i.role === 'gov' ? '[정부]' : '[일반시민]');
+                return `${statusLabel} ${roleLabel} ${i.compName}: ${i.text}`;
             }).join('\n');
             const companiesString = state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
 
@@ -401,7 +453,7 @@
 [보름달국 현재 경제 상태]
 - 국가 기준금리: ${state.baseRate}%
 - 국가 특이 사항(의회/행정부 소식) 및 거시 흐름: ${state.macroContext || "특별한 변동 요인 없음"}
-- 접수된 국민/직원 제보 요약: ${newsString || "없음"}
+- 접수된 국민/내부자 제보 요약: ${newsString || "없음"}
 - 현재 가치 평가 상장 기업: ${companiesString}
 
 [연산 조건 가이드라인]
@@ -465,7 +517,7 @@
                     const sign = c.pct > 0 ? '▲' : (c.pct < 0 ? '▼' : '-');
                     
                     html += `
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="font-bold text-slate-800">${comp.name}</span>
                                 <span class="font-black ${diffColor}">${comp.price.toLocaleString()}달 ➔ ${newPrice.toLocaleString()}달 (${sign}${Math.abs(c.pct)}%)</span>
@@ -482,7 +534,7 @@
             
             result.news.forEach(n => {
                 html += `
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                         <h4 class="font-bold text-slate-800 mb-1">🗞️ ${n.title}</h4>
                         <p class="text-sm text-slate-600 leading-relaxed">${n.content}</p>
                     </div>`;
@@ -552,7 +604,7 @@
                 const sign = diff > 0 ? '▲' : (diff < 0 ? '▼' : '-');
 
                 list.innerHTML += `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-between">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
                         <div class="text-xs font-bold text-slate-400 mb-1">${c.name}</div>
                         <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}달</div>
                         <div class="text-[12px] font-bold ${color} mt-1">${sign} ${Math.abs(diff).toLocaleString()}달 (${sign}${Math.abs(pct)}%)</div>
@@ -631,14 +683,19 @@
         function renderModerationList() {
             const list = document.getElementById('moderation-list');
             list.innerHTML = state.pendingInterviews.map((i, idx) => {
-                const roleBadge = i.role === 'employee' ? '직원' : (i.role === 'gov' ? '공무원' : '시민');
+                const roleBadge = i.role === 'employee' ? '직원(내부자)' : (i.role === 'gov' ? '공무원' : '시민');
+                const roleColor = i.role === 'employee' ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-slate-700 bg-slate-100 border-slate-200';
+                
                 return `
-                <div class="p-3 border rounded-lg bg-white text-xs flex flex-col gap-2 shadow-sm">
-                    <div><b>[${roleBadge}] ${i.compName}</b>: ${i.text}</div>
+                <div class="p-3 border rounded-lg bg-white text-xs flex flex-col gap-2 shadow-sm transition hover:shadow-md">
+                    <div>
+                        <span class="px-2 py-0.5 rounded border ${roleColor} font-bold mr-1">[${roleBadge}]</span> 
+                        <b>${i.compName}</b>: ${i.text}
+                    </div>
                     <div class="flex gap-1 justify-end mt-1">
-                        <button onclick="setFact(${idx}, 'true')" class="${i.status === 'true' ? 'bg-green-600 text-white shadow' : 'bg-green-50 text-green-700 border border-green-200'} px-3 py-1 rounded-md font-bold transition">진실 판정</button>
-                        <button onclick="setFact(${idx}, 'unverified')" class="${i.status === 'unverified' ? 'bg-slate-600 text-white shadow' : 'bg-slate-50 text-slate-700 border border-slate-200'} px-3 py-1 rounded-md font-bold transition">미확인</button>
-                        <button onclick="setFact(${idx}, 'false')" class="${i.status === 'false' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-700 border border-red-200'} px-3 py-1 rounded-md font-bold transition">가짜뉴스 폐기</button>
+                        <button onclick="setFact(${idx}, 'true')" class="${i.status === 'true' ? 'bg-green-600 text-white shadow' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'} px-3 py-1 rounded-md font-bold transition">진실 판정</button>
+                        <button onclick="setFact(${idx}, 'unverified')" class="${i.status === 'unverified' ? 'bg-slate-600 text-white shadow' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100'} px-3 py-1 rounded-md font-bold transition">미확인</button>
+                        <button onclick="setFact(${idx}, 'false')" class="${i.status === 'false' ? 'bg-red-600 text-white shadow' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'} px-3 py-1 rounded-md font-bold transition">가짜뉴스 폐기</button>
                     </div>
                 </div>`
             }).join('');
@@ -680,7 +737,6 @@
             alert(`${name} 학생의 국민 계정이 발급되었습니다. (초기 코드: 1234)`);
         }
 
-        // [신규 기능] 학생 정보(이름, 직업 등) 수정
         function editUser(id) {
             if (id === 'teacher') return alert("상위 국가 파견 행정부 장관(교사)의 정보는 이 방식으로 수정할 수 없습니다.");
             
@@ -770,7 +826,7 @@
                 }
 
                 return `
-                <tr>
+                <tr class="hover:bg-slate-50 transition">
                     <td class="py-2 leading-tight">${u.id}<br><span class="text-[10px] text-slate-400">(${u.name})</span></td>
                     <td class="py-2 leading-tight">${roleText}</td>
                     <td class="py-2 space-y-1">
@@ -786,7 +842,7 @@
             }).join('');
                 
             document.getElementById('company-admin-tbody').innerHTML = state.companies.map(c => `
-                <tr>
+                <tr class="hover:bg-slate-50 transition">
                     <td class="py-2">${c.name}</td>
                     <td class="py-2 font-bold text-indigo-600">${c.price.toLocaleString()}달</td>
                     <td class="py-2">
