@@ -397,15 +397,36 @@
             if (currentUser.role === 'employee' || currentUser.role === 'gov') {
                 const radios = document.getElementsByName('persona');
                 for (let r of radios) { if (r.checked) selectedPersona = r.value; }
-                
-                if (selectedPersona === 'employee') {
-                    dropdown.value = currentUser.companyId;
-                    dropdown.disabled = true;
-                    dropdown.classList.add('bg-slate-100', 'text-indigo-700', 'font-bold');
+            }
+
+            // 발언 신분에 따른 드롭다운 동적 재구성
+            const prevValue = dropdown.value;
+            let optionsHtml = '';
+            
+            if (selectedPersona === 'gov') {
+                optionsHtml += `<option value="all">🌐 보름달국 거시 행정 (특정 기업 제외)</option>`;
+            }
+            optionsHtml += state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            dropdown.innerHTML = optionsHtml;
+            
+            // 기존 선택값이 새로 구성된 드롭다운에도 있다면 유지
+            if (prevValue) {
+                const optionExists = Array.from(dropdown.options).some(opt => opt.value === prevValue);
+                if (optionExists) {
+                    dropdown.value = prevValue;
                 } else {
-                    dropdown.disabled = false;
-                    dropdown.classList.remove('bg-slate-100', 'text-indigo-700', 'font-bold');
+                    dropdown.selectedIndex = 0;
                 }
+            }
+
+            if (selectedPersona === 'employee') {
+                dropdown.value = currentUser.companyId;
+                dropdown.disabled = true;
+                dropdown.classList.add('bg-slate-100', 'text-indigo-700', 'font-bold');
+            } else {
+                dropdown.disabled = false;
+                dropdown.classList.remove('bg-slate-100', 'text-indigo-700', 'font-bold');
             }
 
             const targetName = dropdown.options[dropdown.selectedIndex]?.text || "이 기업";
@@ -508,7 +529,7 @@
 
 [보름달국 현재 경제 상태]
 - 국가 기준금리: ${state.baseRate}%
-- 국가 특이 사항(의회/행정부 소식) 및 거시 흐름: ${state.macroContext || "특별한 변동 요인 없음"}
+- 국가 특이 사항(의회/행정부 소식) 및 거시 흐름: ${state.macroContext || "특별 요인 없음"}
 - 접수된 국민/내부자 제보 요약: ${newsString || "없음"}
 - 현재 가치 평가 상장 기업: ${companiesString}
 
@@ -667,10 +688,6 @@
                     </div>`;
             });
             
-            let optionsHtml = '';
-            if (currentUser && currentUser.role === 'gov') optionsHtml += `<option value="all">🌐 보름달국 거시 행정 (특정 기업 제외)</option>`;
-            optionsHtml += state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            document.getElementById('target-company').innerHTML = optionsHtml;
             updateInterviewPlaceholder(); 
         }
 
