@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v8.96 (보름달국 경제 시뮬레이터)</title>
+    <title>클래스 스탁 하이퍼 v8.97 (보름달국 경제 시뮬레이터)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,7 +20,7 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
             <h1 class="text-3xl font-black text-center text-indigo-600 mb-2">FULLMOON STOCK</h1>
-            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.96</p>
+            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.97</p>
             <div class="space-y-4">
                 <input type="text" id="login-id" placeholder="아이디" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="password" id="login-pw" placeholder="비밀번호" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400" onkeypress="if(event.key === 'Enter') login()">
@@ -75,7 +75,7 @@
                                     <input type="radio" name="persona" value="citizen" checked onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 👤 일반 시민
                                 </label>
                                 <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
-                                    <input type="radio" name="persona" value="employee" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏢 소속 기업 내부자
+                                    <input type="radio" name="persona" value="employee" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏢 소속 기업 직원
                                 </label>
                             </div>
 
@@ -90,7 +90,7 @@
                                 </label>
                             </div>
 
-                            <button onclick="submitInterview()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">제보 전송하기</button>
+                            <button onclick="submitInterview()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">의견 전송하기</button>
                         </div>
                     </div>
 
@@ -155,7 +155,7 @@
                 </div>
 
                 <div class="bg-white p-5 rounded-xl shadow-sm mb-6">
-                    <h3 class="font-bold text-rose-700 mb-4">🔍 실시간 제보 모니터링 (가짜뉴스 팩트체크)</h3>
+                    <h3 class="font-bold text-rose-700 mb-4">🔍 실시간 의견 모니터링 (가짜뉴스 팩트체크)</h3>
                     <div id="moderation-list" class="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-hide"></div>
                 </div>
 
@@ -218,6 +218,41 @@
             <div class="p-4 border-t bg-white flex gap-3">
                 <button onclick="applyNextDay()" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-black text-lg hover:bg-green-700 transition shadow-md">✅ 최종 승인 및 턴 전환</button>
                 <button onclick="cancelNextDay()" class="flex-1 bg-slate-300 text-slate-800 py-3 rounded-lg font-bold hover:bg-slate-400 transition shadow-md">❌ 재조정(취소)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden border-2 border-blue-500">
+            <div class="bg-blue-600 text-white p-4">
+                <h2 class="text-lg font-black flex items-center gap-2">📝 학생(국민) 정보 수정</h2>
+            </div>
+            <div class="p-6 space-y-4 text-sm text-slate-700 bg-slate-50">
+                <input type="hidden" id="edit-user-id-hidden">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">아이디 (수정 불가)</label>
+                    <input type="text" id="edit-user-id-display" class="w-full border p-2 rounded bg-slate-200 text-slate-500 outline-none" disabled>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">이름</label>
+                    <input type="text" id="edit-user-name" class="w-full border p-2 rounded outline-none focus:border-blue-400 bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">직업</label>
+                    <select id="edit-user-role" onchange="toggleEditCompanySelect()" class="w-full border p-2 rounded bg-white outline-none focus:border-blue-400">
+                        <option value="citizen">시민</option>
+                        <option value="employee">기업 직원</option>
+                        <option value="gov">공무원</option>
+                    </select>
+                </div>
+                <div id="edit-company-container" class="hidden">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">소속 기업 (직원일 경우)</label>
+                    <select id="edit-user-company" class="w-full border p-2 rounded bg-white outline-none focus:border-blue-400"></select>
+                </div>
+            </div>
+            <div class="p-4 border-t bg-white flex gap-3">
+                <button onclick="saveEditedUser()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">저장하기</button>
+                <button onclick="closeEditUserModal()" class="flex-1 bg-slate-300 text-slate-800 py-2 rounded-lg font-bold hover:bg-slate-400 transition">취소</button>
             </div>
         </div>
     </div>
@@ -305,7 +340,6 @@
                 document.getElementById('gov-announcement-box').classList.remove('hidden');
             }
 
-            // 직원(내부자)일 경우에만 신분 선택 라디오 버튼 표시
             if (currentUser.role === 'employee') {
                 document.getElementById('persona-selection').classList.remove('hidden');
             } else {
@@ -351,7 +385,6 @@
                 const radios = document.getElementsByName('persona');
                 for (let r of radios) { if (r.checked) selectedPersona = r.value; }
                 
-                // 내부자 모드 선택 시 자기 소속 기업으로 드롭다운 고정
                 if (selectedPersona === 'employee') {
                     dropdown.value = currentUser.companyId;
                     dropdown.disabled = true;
@@ -372,13 +405,13 @@
             const targetCompanyId = dropdown.value; 
 
             if (selectedPersona === 'citizen' || currentUser.role === 'citizen') {
-                ta.placeholder = `보름달국 국민으로서 [${targetName}]에 제안하거나 제보할 시장 동향을 적어주세요.`;
+                ta.placeholder = `보름달국 국민으로서 [${targetName}]에 제안하거나 건의하고 싶은 내용을 편하게 적어주세요.`;
             } else if (selectedPersona === 'employee') {
-                ta.placeholder = `[${targetName}] 기업 소속 직원으로서 내부 동향이나 향후 실적 예측을 기밀 제보합니다. (가상의 사장님 대신 직원으로서 핵심 정보 제공!)`;
+                ta.placeholder = `[${targetName}] 소속 직원으로서 회사에 바라는 점이나 내부 상황을 의견으로 남겨주세요.`;
             } else if (selectedPersona === 'gov') {
                 ta.placeholder = targetCompanyId === 'all' ? `거시적인 보름달국 국정 운영 및 통화 정책 공식 입장을 수립하세요.` : `[${targetName}] 기업의 경영 안정화를 위한 규제 및 지원 행정명령을 작성하세요.`;
             } else {
-                ta.placeholder = "시장에 전달할 원인 요소들을 기입하세요...";
+                ta.placeholder = "의견을 기입하세요...";
             }
         }
 
@@ -412,9 +445,10 @@
 
             state.pendingInterviews.push({ author: currentUser.name, role: effectiveRole, text, companyId, compName: compName, status: 'unverified' });
 
+            // 알림 메시지를 부드럽고 평범하게 변경 (유저 피드백 반영)
             const alertMsg = effectiveRole === 'employee' ? 
-                `[내부 기밀 제보 접수] ${compName}의 핵심 동향이 모니터링 시스템으로 이송되었습니다.` : 
-                `[시민 의견 접수] 중앙 본부 모니터링 시스템으로 제보가 이송되었습니다.`;
+                `[직원 의견 접수] ${compName} 관련 소중한 의견이 정상적으로 접수되었습니다.` : 
+                `[시민 의견 접수] 소중한 의견이 정상적으로 접수되었습니다.`;
 
             alert(alertMsg);
             
@@ -683,7 +717,7 @@
         function renderModerationList() {
             const list = document.getElementById('moderation-list');
             list.innerHTML = state.pendingInterviews.map((i, idx) => {
-                const roleBadge = i.role === 'employee' ? '직원(내부자)' : (i.role === 'gov' ? '공무원' : '시민');
+                const roleBadge = i.role === 'employee' ? '직원' : (i.role === 'gov' ? '공무원' : '시민');
                 const roleColor = i.role === 'employee' ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-slate-700 bg-slate-100 border-slate-200';
                 
                 return `
@@ -728,7 +762,7 @@
             const name = document.getElementById('new-user-name').value.trim();
             const role = document.getElementById('new-user-role').value;
             const companyId = document.getElementById('new-user-company').value;
-            if(!id || !name) return alert("식별 아이디와 성명을 완편해 주세요.");
+            if(!id || !name) return alert("식별 아이디와 이름을 입력해 주세요.");
             if(state.users.find(u => u.id === id)) return alert("중복된 식별값입니다.");
             
             state.users.push({ id, pw: '1234', name, role, companyId: role === 'employee' ? parseInt(companyId) : null });
@@ -738,39 +772,53 @@
         }
 
         function editUser(id) {
-            if (id === 'teacher') return alert("상위 국가 파견 행정부 장관(교사)의 정보는 이 방식으로 수정할 수 없습니다.");
+            if (id === 'teacher') return alert("상위 국가 파견 행정부 장관(교사)의 정보는 수정할 수 없습니다.");
             
             const user = state.users.find(u => u.id === id);
             if (!user) return;
 
-            const newName = prompt("변경할 학생(국민)의 이름을 입력하세요:", user.name);
-            if(newName === null || newName.trim() === "") return;
+            document.getElementById('edit-user-id-hidden').value = user.id;
+            document.getElementById('edit-user-id-display').value = user.id;
+            document.getElementById('edit-user-name').value = user.name;
+            document.getElementById('edit-user-role').value = user.role;
             
-            const roleStr = "직업을 선택하세요.\n1: 시민\n2: 기업 직원\n3: 공무원";
-            const currentRoleNum = user.role === 'citizen' ? "1" : (user.role === 'employee' ? "2" : "3");
-            const roleInput = prompt(roleStr, currentRoleNum);
+            document.getElementById('edit-user-company').innerHTML = state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             
-            if(roleInput === null) return;
-            
-            let newRole = 'citizen';
-            let newCompanyId = null;
-            
-            if (roleInput === "2") {
-                newRole = 'employee';
-                const compList = state.companies.map(c => `${c.id} : ${c.name}`).join('\n');
-                const compInput = prompt(`소속될 기업의 ID(숫자)를 입력하세요:\n${compList}`, user.companyId || state.companies[0].id);
-                if (compInput) newCompanyId = parseInt(compInput);
-            } else if (roleInput === "3") {
-                newRole = 'gov';
+            if (user.companyId) {
+                document.getElementById('edit-user-company').value = user.companyId;
             }
 
-            user.name = newName.trim();
-            user.role = newRole;
-            user.companyId = newCompanyId;
+            toggleEditCompanySelect();
+            document.getElementById('edit-user-modal').classList.remove('hidden');
+        }
 
-            saveState(); 
-            renderAdminTables();
-            alert("학생 계정 정보가 수정되었습니다.");
+        function toggleEditCompanySelect() {
+            const role = document.getElementById('edit-user-role').value;
+            document.getElementById('edit-company-container').classList.toggle('hidden', role !== 'employee');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('edit-user-modal').classList.add('hidden');
+        }
+
+        function saveEditedUser() {
+            const id = document.getElementById('edit-user-id-hidden').value;
+            const newName = document.getElementById('edit-user-name').value.trim();
+            const newRole = document.getElementById('edit-user-role').value;
+            const newCompanyId = document.getElementById('edit-user-company').value;
+
+            if(!newName) return alert("이름을 입력해주세요.");
+
+            const user = state.users.find(u => u.id === id);
+            if (user) {
+                user.name = newName;
+                user.role = newRole;
+                user.companyId = newRole === 'employee' ? parseInt(newCompanyId) : null;
+                saveState();
+                renderAdminTables();
+                closeEditUserModal();
+                alert("학생 정보가 성공적으로 수정되었습니다.");
+            }
         }
 
         function deleteUser(id) {
@@ -788,7 +836,7 @@
         function addCompany() {
             const name = document.getElementById('new-company-name').value.trim();
             const price = parseInt(document.getElementById('new-company-price').value);
-            if(!name || isNaN(price)) return alert("정확한 유효 명칭과 발행 가액을 정형화하세요.");
+            if(!name || isNaN(price)) return alert("정확한 기업명과 주가를 입력하세요.");
             
             state.companies.push({ id: Date.now(), name, price, history: Array(state.day).fill(price) });
             saveState(); updateUI();
@@ -797,9 +845,9 @@
 
         function editCompany(id) {
             const comp = state.companies.find(c => c.id === id);
-            const newName = prompt("변경할 기업 간판명을 기재하세요:", comp.name);
+            const newName = prompt("변경할 기업 이름을 입력하세요:", comp.name);
             if(newName === null) return;
-            const newPrice = prompt("조정할 기준 시가를 산정하세요 (정수):", comp.price);
+            const newPrice = prompt("조정할 기준 주가를 입력하세요 (정수):", comp.price);
             if(newPrice === null) return;
 
             if (newName.trim() !== "" && !isNaN(newPrice)) {
@@ -809,8 +857,8 @@
         }
 
         function deleteCompany(id) {
-            if (state.companies.length <= 1) return alert("최소 1개의 상장 인프라는 잔존해야 시뮬레이터가 유지됩니다.");
-            if (confirm("해당 인프라를 시장에서 영구 퇴출(상장폐지) 합니까?")) {
+            if (state.companies.length <= 1) return alert("최소 1개의 상장 기업은 남아있어야 합니다.");
+            if (confirm("해당 기업을 시장에서 영구 퇴출(상장폐지) 합니까?")) {
                 state.companies = state.companies.filter(c => c.id !== id); saveState(); updateUI();
             }
         }
