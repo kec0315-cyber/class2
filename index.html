@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v8.97 (보름달국 경제 시뮬레이터)</title>
+    <title>클래스 스탁 하이퍼 v8.98 (보름달국 경제 시뮬레이터)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,7 +20,7 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
             <h1 class="text-3xl font-black text-center text-indigo-600 mb-2">FULLMOON STOCK</h1>
-            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.97</p>
+            <p class="text-center text-slate-400 mb-8 text-sm">보름달국 경제 시뮬레이터 v8.98</p>
             <div class="space-y-4">
                 <input type="text" id="login-id" placeholder="아이디" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="password" id="login-pw" placeholder="비밀번호" class="w-full border border-slate-200 rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-400" onkeypress="if(event.key === 'Enter') login()">
@@ -69,14 +69,22 @@
                         <h2 class="text-lg font-bold mb-4">🎤 정보 제보 및 직업 의견</h2>
                         <div class="space-y-4">
                             
-                            <div id="persona-selection" class="hidden flex flex-wrap gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200 items-center">
-                                <span class="text-xs font-bold text-slate-500">발언 신분:</span>
-                                <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
-                                    <input type="radio" name="persona" value="citizen" checked onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 👤 일반 시민
-                                </label>
-                                <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
-                                    <input type="radio" name="persona" value="employee" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏢 소속 기업 직원
-                                </label>
+                            <div id="persona-selection" class="hidden flex flex-col gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                <span class="text-xs font-bold text-slate-500">발언 신분 선택:</span>
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                        <input type="radio" name="persona" value="citizen" checked onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 👤 일반 시민
+                                    </label>
+                                    <label id="employee-persona-label" class="hidden text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                        <input type="radio" name="persona" value="employee" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏢 소속 기업 직원
+                                    </label>
+                                    <label id="gov-official-persona-label" class="hidden text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                        <input type="radio" name="persona" value="gov" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 🏛️ 공무원 공식 입장
+                                    </label>
+                                    <label id="gov-comment-persona-label" class="hidden text-sm flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                                        <input type="radio" name="persona" value="gov_comment" onchange="updateInterviewPlaceholder()" class="accent-indigo-600 w-4 h-4"> 💬 공무원 기업 코멘트
+                                    </label>
+                                </div>
                             </div>
 
                             <select id="target-company" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white" onchange="updateInterviewPlaceholder()"></select>
@@ -212,8 +220,7 @@
                 </div>
             </div>
             
-            <div id="preview-content" class="p-6 overflow-y-auto flex-1 space-y-6 text-sm text-slate-700 bg-slate-50">
-                </div>
+            <div id="preview-content" class="p-6 overflow-y-auto flex-1 space-y-6 text-sm text-slate-700 bg-slate-50"></div>
             
             <div class="p-4 border-t bg-white flex gap-3">
                 <button onclick="applyNextDay()" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-black text-lg hover:bg-green-700 transition shadow-md">✅ 최종 승인 및 턴 전환</button>
@@ -277,7 +284,6 @@
             depositRateReasoning: "보름달국 경제 국가 시스템이 가동되었습니다. 초기 설정된 기준금리를 바탕으로 자산 거품을 예방하고 저축 성향을 장려할 수 있는 안전율이 적용된 수치입니다."
         };
 
-        // 데이터 마이그레이션 (과거 버전 호환)
         state.users.forEach(u => { if (u.role === 'insider') u.role = 'employee'; });
 
         let teacherAccount = state.users.find(u => u.id === 'teacher');
@@ -336,12 +342,19 @@
                 document.getElementById('admin-panel').classList.add('hidden');
             }
 
-            if (currentUser.role === 'gov') {
-                document.getElementById('gov-announcement-box').classList.remove('hidden');
-            }
+            document.getElementById('employee-persona-label').classList.add('hidden');
+            document.getElementById('gov-official-persona-label').classList.add('hidden');
+            document.getElementById('gov-comment-persona-label').classList.add('hidden');
 
             if (currentUser.role === 'employee') {
                 document.getElementById('persona-selection').classList.remove('hidden');
+                document.getElementById('employee-persona-label').classList.remove('hidden');
+                document.getElementsByName('persona')[0].checked = true;
+            } else if (currentUser.role === 'gov') {
+                document.getElementById('persona-selection').classList.remove('hidden');
+                document.getElementById('gov-official-persona-label').classList.remove('hidden');
+                document.getElementById('gov-comment-persona-label').classList.remove('hidden');
+                document.getElementsByName('persona')[0].checked = true; 
             } else {
                 document.getElementById('persona-selection').classList.add('hidden');
             }
@@ -381,7 +394,7 @@
             
             let selectedPersona = 'citizen';
             
-            if (currentUser.role === 'employee') {
+            if (currentUser.role === 'employee' || currentUser.role === 'gov') {
                 const radios = document.getElementsByName('persona');
                 for (let r of radios) { if (r.checked) selectedPersona = r.value; }
                 
@@ -393,16 +406,19 @@
                     dropdown.disabled = false;
                     dropdown.classList.remove('bg-slate-100', 'text-indigo-700', 'font-bold');
                 }
-            } else if (currentUser.role === 'gov') {
-                selectedPersona = 'gov';
-                dropdown.disabled = false;
-            } else if (currentUser.role === 'teacher') {
-                selectedPersona = 'teacher';
-                dropdown.disabled = false;
             }
 
             const targetName = dropdown.options[dropdown.selectedIndex]?.text || "이 기업";
             const targetCompanyId = dropdown.value; 
+
+            if (selectedPersona === 'gov') {
+                document.getElementById('gov-announcement-box').classList.remove('hidden');
+            } else {
+                if (document.getElementById('gov-announcement-box')) {
+                    document.getElementById('gov-announcement-box').classList.add('hidden');
+                    document.getElementById('is-announcement').checked = false;
+                }
+            }
 
             if (selectedPersona === 'citizen' || currentUser.role === 'citizen') {
                 ta.placeholder = `보름달국 국민으로서 [${targetName}]에 제안하거나 건의하고 싶은 내용을 편하게 적어주세요.`;
@@ -410,6 +426,8 @@
                 ta.placeholder = `[${targetName}] 소속 직원으로서 회사에 바라는 점이나 내부 상황을 의견으로 남겨주세요.`;
             } else if (selectedPersona === 'gov') {
                 ta.placeholder = targetCompanyId === 'all' ? `거시적인 보름달국 국정 운영 및 통화 정책 공식 입장을 수립하세요.` : `[${targetName}] 기업의 경영 안정화를 위한 규제 및 지원 행정명령을 작성하세요.`;
+            } else if (selectedPersona === 'gov_comment') {
+                ta.placeholder = `공무원으로서 [${targetName}]에 대한 평가나 행정 코멘트를 간단히 한 줄로 남겨주세요.`;
             } else {
                 ta.placeholder = "의견을 기입하세요...";
             }
@@ -423,7 +441,7 @@
             if (!text) return alert("내용을 입력하세요.");
 
             let effectiveRole = currentUser.role;
-            if (currentUser.role === 'employee') {
+            if (currentUser.role === 'employee' || currentUser.role === 'gov') {
                 const radios = document.getElementsByName('persona');
                 for (let r of radios) { if (r.checked) effectiveRole = r.value; }
             }
@@ -436,7 +454,7 @@
                 if(comp) compName = comp.name;
             }
 
-            if (currentUser.role === 'gov' && isAnnounce) {
+            if (effectiveRole === 'gov' && isAnnounce) {
                 if (!state.govAnnouncements) state.govAnnouncements = [];
                 const targetLabel = companyId ? `[${compName} 관련]` : `[전체 국정]`;
                 state.govAnnouncements.unshift(`[${state.day}일자 공지] ${targetLabel} ${text}`);
@@ -445,10 +463,14 @@
 
             state.pendingInterviews.push({ author: currentUser.name, role: effectiveRole, text, companyId, compName: compName, status: 'unverified' });
 
-            // 알림 메시지를 부드럽고 평범하게 변경 (유저 피드백 반영)
-            const alertMsg = effectiveRole === 'employee' ? 
-                `[직원 의견 접수] ${compName} 관련 소중한 의견이 정상적으로 접수되었습니다.` : 
-                `[시민 의견 접수] 소중한 의견이 정상적으로 접수되었습니다.`;
+            let alertMsg = `[시민 의견 접수] 소중한 의견이 정상적으로 접수되었습니다.`;
+            if (effectiveRole === 'employee') {
+                alertMsg = `[직원 의견 접수] ${compName} 관련 소중한 의견이 정상적으로 접수되었습니다.`;
+            } else if (effectiveRole === 'gov') {
+                alertMsg = `[공무원 공식 입장 접수] 정부 공식 의견이 정상적으로 접수되었습니다.`;
+            } else if (effectiveRole === 'gov_comment') {
+                alertMsg = `[공무원 기업 코멘트 접수] ${compName}에 대한 한 줄 의견이 접수되었습니다.`;
+            }
 
             alert(alertMsg);
             
@@ -470,7 +492,7 @@
             const interviews = state.pendingInterviews.filter(i => i.status !== 'false');
             const newsString = interviews.map(i => {
                 const statusLabel = i.status === 'true' ? '[팩트체크: 실제 정보]' : '[팩트체크: 검증안된 루머]';
-                const roleLabel = i.role === 'employee' ? '[내부자 정보]' : (i.role === 'gov' ? '[정부]' : '[일반시민]');
+                const roleLabel = i.role === 'employee' ? '[내부자 정보]' : (i.role === 'gov' ? '[정부 공식]' : (i.role === 'gov_comment' ? '[정부 코멘트]' : '[일반시민]'));
                 return `${statusLabel} ${roleLabel} ${i.compName}: ${i.text}`;
             }).join('\n');
             const companiesString = state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
@@ -717,8 +739,12 @@
         function renderModerationList() {
             const list = document.getElementById('moderation-list');
             list.innerHTML = state.pendingInterviews.map((i, idx) => {
-                const roleBadge = i.role === 'employee' ? '직원' : (i.role === 'gov' ? '공무원' : '시민');
-                const roleColor = i.role === 'employee' ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-slate-700 bg-slate-100 border-slate-200';
+                let roleBadge = '시민';
+                if(i.role === 'employee') roleBadge = '직원';
+                else if(i.role === 'gov') roleBadge = '공무원(공식)';
+                else if(i.role === 'gov_comment') roleBadge = '공무원(코멘트)';
+                
+                const roleColor = i.role === 'employee' ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : (i.role.startsWith('gov') ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-slate-700 bg-slate-100 border-slate-200');
                 
                 return `
                 <div class="p-3 border rounded-lg bg-white text-xs flex flex-col gap-2 shadow-sm transition hover:shadow-md">
