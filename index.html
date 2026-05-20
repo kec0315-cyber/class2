@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v9.7 (일괄생성 비밀번호 지정)</title>
+    <title>클래스 스탁 하이퍼 v9.8 (은행 주식수 관리 & AI 힌트 피드)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -61,6 +61,13 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <canvas id="marketChart" height="130"></canvas>
                     </div>
+
+                    <div id="bank-employee-panel" class="hidden bg-emerald-50 p-6 rounded-2xl shadow-sm border-2 border-emerald-200">
+                        <h2 class="text-lg font-black text-emerald-800 mb-2 flex items-center gap-2">🏦 중앙은행 기업 주식(발행량) 관리 데스크</h2>
+                        <p class="text-xs text-emerald-600 mb-4">각 기업의 총 발행 주식수를 조절하여 유동성을 관리하세요. 주식수가 늘어나면 가치(주가)가 희석될 수 있습니다.</p>
+                        <div id="bank-shares-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+                        <button onclick="saveSharesFromBank()" class="mt-4 w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition shadow-md">주식 발행량 일괄 적용하기</button>
+                    </div>
                 </div>
 
                 <div class="space-y-6">
@@ -104,7 +111,7 @@
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm h-80 flex flex-col border border-slate-100">
-                        <h2 class="text-lg font-bold mb-4">📰 AI 보름달 경제 뉴스 피드</h2>
+                        <h2 class="text-lg font-bold mb-4">📰 찌라시 & 경제 뉴스 피드 (AI 투자 힌트)</h2>
                         <div id="public-news-feed" class="flex-1 overflow-y-auto space-y-3 text-sm scrollbar-hide pr-2"></div>
                     </div>
                 </div>
@@ -141,8 +148,8 @@
                                 <input type="number" step="0.1" id="base-rate-input" placeholder="예: 2.0" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-amber-400 outline-none">
                             </div>
                             <div>
-                                <label class="text-xs font-bold text-indigo-600">🌐 국가 거시 상황 코멘트 (AI 변동에 적극 반영)</label>
-                                <textarea id="macro-context-input" rows="2" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="예: 상위 국가(학교) 차원의 특정 행사, 의회 법안 통과 등"></textarea>
+                                <label class="text-xs font-bold text-indigo-600">🌐 국가 거시 상황 코멘트 (비워두면 AI가 자유롭게 상상합니다)</label>
+                                <textarea id="macro-context-input" rows="2" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="예: 상위 국가(학교) 차원의 특정 행사, 의회 법안 통과 등 (비워두면 AI 자동 생성)"></textarea>
                             </div>
 
                             <div class="pt-4 border-t border-slate-100">
@@ -158,7 +165,7 @@
 
                     <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
                         <h3 class="font-bold text-rose-700 mb-2">🚀 오늘 보름달국 시장 마감</h3>
-                        <p class="text-xs text-slate-500 mb-4">마감 시 AI가 학생들의 제보를 반영하여 다음 턴 시장을 설계합니다.</p>
+                        <p class="text-xs text-slate-500 mb-4">마감 시 AI가 거시경제 상상력과 제보, 주식수를 종합하여 다음 턴 시장을 렌더링합니다.</p>
                         <button id="process-day-btn" onclick="processNextDay()" class="w-full py-6 bg-rose-600 text-white rounded-xl font-black text-xl hover:bg-rose-700 transition shadow-lg transform hover:scale-[1.02]">턴 마감 및 AI 분석 가동</button>
                     </div>
                 </div>
@@ -186,9 +193,8 @@
                         
                         <div class="mb-4 border-t pt-4 border-slate-100 bg-slate-50 p-3 rounded-lg">
                             <label class="text-xs font-bold text-slate-500 mb-1 block">📄 명단 복사/붙여넣기 일괄 생성 (한 줄에 한 명)</label>
-                            <p class="text-[10px] text-slate-400 mb-2">엑셀에서 [아이디], [이름], [비밀번호] 세 열을 복사하여 아래에 붙여넣기 하세요. (비밀번호 생략 시 '1234' 지정)</p>
-                            <textarea id="bulk-user-input" rows="3" placeholder="예시:&#10;user1 홍길동 1234&#10;user2 김철수 5678&#10;user3 이영희 (비밀번호 생략시 자동 1234)" class="w-full border p-2 rounded text-xs outline-none focus:border-green-400 bg-white"></textarea>
-                            <button onclick="addBulkUsers()" class="mt-2 w-full bg-slate-700 text-white px-3 py-2 rounded text-xs font-bold hover:bg-slate-800 shadow-sm">엑셀 명단 일괄 등록하기 (모두 시민으로 생성)</button>
+                            <textarea id="bulk-user-input" rows="3" placeholder="예시:&#10;user1 홍길동 1234" class="w-full border p-2 rounded text-xs outline-none focus:border-green-400 bg-white"></textarea>
+                            <button onclick="addBulkUsers()" class="mt-2 w-full bg-slate-700 text-white px-3 py-2 rounded text-xs font-bold hover:bg-slate-800 shadow-sm">일괄 등록하기 (모두 시민으로 생성)</button>
                         </div>
 
                         <div class="max-h-40 overflow-y-auto border-t border-slate-100 scrollbar-hide">
@@ -211,7 +217,7 @@
                         <div class="max-h-40 overflow-y-auto border-t border-slate-100 scrollbar-hide">
                             <table class="w-full text-xs text-center border-collapse">
                                 <thead>
-                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">기업명</th><th class="py-2 text-slate-500">현재가</th><th class="py-2 text-slate-500">관리</th></tr>
+                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">기업명</th><th class="py-2 text-slate-500">현재가(주식수)</th><th class="py-2 text-slate-500">관리</th></tr>
                                 </thead>
                                 <tbody id="company-admin-tbody" class="divide-y text-slate-600"></tbody>
                             </table>
@@ -298,17 +304,18 @@
         const marketRef = ref(db, 'classStockState/market');
         const interviewsRef = ref(db, 'classStockState/interviews');
 
+        // 기본 기업 데이터에 shares(주식수) 항목 추가 (기본 100주)
         const defaultMarketState = {
             day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
-                { id: 1, name: "계산 잘하는 은행", price: 100, history: [100] }, 
-                { id: 2, name: "태무산 신용평가회사", price: 100, history: [100] },
-                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100] },
-                { id: 4, name: "지우개 칠판 청소", price: 100, history: [100] },
-                { id: 5, name: "말랑카우 우유", price: 100, history: [100] },
-                { id: 6, name: "쫄병 인력사무소", price: 100, history: [100] },
-                { id: 7, name: "신데렐라 청소회사", price: 100, history: [100] },
-                { id: 8, name: "기름나는 마트", price: 100, history: [100] }
+                { id: 1, name: "계산 잘하는 은행", price: 100, shares: 100, history: [100] }, 
+                { id: 2, name: "태무산 신용평가회사", price: 100, shares: 100, history: [100] },
+                { id: 3, name: "AI 태블릿 관리 업체", price: 100, shares: 100, history: [100] },
+                { id: 4, name: "지우개 칠판 청소", price: 100, shares: 100, history: [100] },
+                { id: 5, name: "말랑카우 우유", price: 100, shares: 100, history: [100] },
+                { id: 6, name: "쫄병 인력사무소", price: 100, shares: 100, history: [100] },
+                { id: 7, name: "신데렐라 청소회사", price: 100, shares: 100, history: [100] },
+                { id: 8, name: "기름나는 마트", price: 100, shares: 100, history: [100] }
             ],
             publicNews: [], macroNewsText: "시장이 평온하게 시작되었습니다.",
             govAnnouncements: [],
@@ -330,13 +337,10 @@
                 loginBtn.disabled = false;
                 loginBtn.innerText = "시스템 접속";
                 loginBtn.classList.replace('bg-slate-400', 'bg-indigo-600');
-                loginBtn.classList.add('hover:bg-indigo-700');
-                document.getElementById('server-status').innerText = "🟢 안전 보안 서버 연결 완료";
-                document.getElementById('server-status').classList.replace('text-amber-500', 'text-green-500');
             }
         }).catch((error) => {
             console.error(error);
-            alert("보안 서버 접근이 차단되었습니다. 학교 인터넷 설정을 확인하세요.");
+            alert("보안 서버 접근이 차단되었습니다.");
         });
 
         onValue(marketRef, (snapshot) => {
@@ -344,6 +348,9 @@
             if (data) {
                 window.state = data;
                 if(!window.state.companies) window.state.companies = [];
+                // 레거시 호환을 위해 shares가 없는 기업은 100으로 초기화
+                window.state.companies.forEach(c => { if(!c.shares) c.shares = 100; });
+                
                 if(!window.state.publicNews) window.state.publicNews = [];
                 if(!window.state.govAnnouncements) window.state.govAnnouncements = [];
                 if(!window.state.users) window.state.users = [];
@@ -361,24 +368,18 @@
 
         onValue(interviewsRef, (snapshot) => {
             window.interviews = snapshot.val() || {};
-            
             if (window.currentUser && window.currentUser.role !== 'teacher' && !document.getElementById('dashboard').classList.contains('hidden')) {
                 const myCount = Object.values(window.interviews).filter(i => i.userId === window.currentUser.id).length;
                 const countDisplay = document.getElementById('submission-count-display');
-                if (countDisplay) {
-                    countDisplay.innerText = `오늘 제출: ${myCount}/10`;
-                    if (myCount >= 10) countDisplay.classList.replace('text-slate-500', 'text-red-500');
-                    else countDisplay.classList.replace('text-red-500', 'text-slate-500');
-                }
+                if (countDisplay) countDisplay.innerText = `오늘 제출: ${myCount}/10`;
             }
-
             if (window.currentUser && window.currentUser.role === 'teacher' && !document.getElementById('dashboard').classList.contains('hidden')) {
                 renderModerationList();
             }
         });
 
         window.saveState = function() {
-            set(marketRef, window.state).catch(e => alert("권한 없음: 선생님(관리자)만 수정할 수 있습니다."));
+            set(marketRef, window.state).catch(e => alert("권한 없음: 관리자/권한자만 수정할 수 있습니다."));
         }
 
         window.login = function() {
@@ -388,20 +389,12 @@
             
             if (id === 'teacher') {
                 signInWithEmailAndPassword(auth, 'teacher@moon.com', pw)
-                    .then(() => {
-                        window.currentUser = { id: 'teacher', name: '선생님', role: 'teacher' };
-                        showDashboard();
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                        alert("장관님(교사) 인증 비밀번호가 틀렸습니다.");
-                    });
+                    .then(() => { window.currentUser = { id: 'teacher', name: '선생님', role: 'teacher' }; showDashboard(); })
+                    .catch((err) => { alert("장관님(교사) 인증 비밀번호가 틀렸습니다."); });
             } else {
                 const user = window.state.users.find(u => u.id === id && u.pw === pw);
-                if (user) {
-                    window.currentUser = user;
-                    showDashboard();
-                } else alert("아이디 혹은 비밀번호가 틀립니다.");
+                if (user) { window.currentUser = user; showDashboard(); }
+                else alert("아이디 혹은 비밀번호가 틀립니다.");
             }
         }
 
@@ -427,6 +420,7 @@
             }
             document.getElementById('current-user-role-display').innerText = roleLabel;
 
+            // 관리자 패널 표시
             if (window.currentUser.role === 'teacher') {
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('gemini-api-key').value = localStorage.getItem('my_secret_gemini_key') || "";
@@ -438,6 +432,18 @@
                 document.getElementById('admin-panel').classList.add('hidden');
             }
 
+            // 은행 직원 특수 권한 (이름에 '은행'이 들어가거나 ID가 1인 기업 소속일 때)
+            const myCompany = window.state.companies.find(c => c.id == window.currentUser.companyId);
+            const isBankEmployee = window.currentUser.role === 'employee' && myCompany && myCompany.name.includes('은행');
+            
+            if (isBankEmployee) {
+                document.getElementById('bank-employee-panel').classList.remove('hidden');
+                renderBankSharesPanel();
+            } else {
+                document.getElementById('bank-employee-panel').classList.add('hidden');
+            }
+
+            // 페르소나 선택 UI 처리
             document.getElementById('employee-persona-label').classList.add('hidden');
             document.getElementById('gov-official-persona-label').classList.add('hidden');
             document.getElementById('gov-comment-persona-label').classList.add('hidden');
@@ -478,6 +484,39 @@
                 const myCount = Object.values(window.interviews).filter(i => i.userId === window.currentUser.id).length;
                 const countDisplay = document.getElementById('submission-count-display');
                 if (countDisplay) countDisplay.innerText = `오늘 제출: ${myCount}/10`;
+            }
+        }
+
+        // 은행 직원용 주식수 관리 UI
+        function renderBankSharesPanel() {
+            const list = document.getElementById('bank-shares-list');
+            list.innerHTML = window.state.companies.map(c => `
+                <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 flex flex-col justify-between">
+                    <span class="text-xs font-bold text-slate-700 mb-1">${c.name}</span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="number" id="bank-share-input-${c.id}" value="${c.shares || 100}" class="w-full border p-1 rounded text-sm text-right focus:border-emerald-400 outline-none">
+                        <span class="text-xs text-slate-500">주</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 은행 직원이 주식수 저장
+        window.saveSharesFromBank = function() {
+            let updated = false;
+            window.state.companies.forEach(c => {
+                const input = document.getElementById(`bank-share-input-${c.id}`);
+                if (input) {
+                    const val = parseInt(input.value);
+                    if (!isNaN(val) && val > 0) {
+                        c.shares = val;
+                        updated = true;
+                    }
+                }
+            });
+            if (updated) {
+                saveState();
+                alert("✅ 중앙은행 명의로 각 기업 발행 주식수가 성공적으로 업데이트 되었습니다.");
             }
         }
 
@@ -564,26 +603,19 @@
             }
 
             const payload = {
-                userId: window.currentUser.id,
-                author: window.currentUser.name,
-                role: effectiveRole,
-                text: text,
-                companyId: companyId,
-                compName: compName,
-                status: 'unverified',
-                isAnnounce: isAnnounce || false
+                userId: window.currentUser.id, author: window.currentUser.name,
+                role: effectiveRole, text: text, companyId: companyId,
+                compName: compName, status: 'unverified', isAnnounce: isAnnounce || false
             };
 
             push(interviewsRef, payload).then(() => {
                 alert("의견이 접수 되었습니다.");
                 document.getElementById('interview-text').value = '';
                 if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
-            }).catch(e => {
-                alert("전송 실패: 권한 문제나 네트워크 연결을 확인하세요.");
-                console.error(e);
             });
         }
 
+        // 🚨 AI 프롬프트 강화: 상상력과 힌트 부여
         window.processNextDay = async function() {
             window.state.baseRate = parseFloat(document.getElementById('base-rate-input').value) || 2.0;
             window.state.macroContext = document.getElementById('macro-context-input').value.trim();
@@ -602,7 +634,7 @@
                 return `${statusLabel} ${roleLabel} ${i.compName}: ${i.text}`;
             }).join('\n');
             
-            const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
+            const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달, 발행주식수:${c.shares || 100}주)`).join('\n');
             const teacherSecretKey = localStorage.getItem('my_secret_gemini_key');
 
             if (!teacherSecretKey) {
@@ -613,20 +645,22 @@
 
             try {
                 const prompt = `당신은 한 학급을 가상의 국가 경제 체제('학교' 산하 의회제 국가 '보름달국')로 삼고 교실 내 직업 경제 활동과 주식 투자를 병행하는 시뮬레이터 교육 전문가 AI입니다. 아래 지표를 토대로 다음 회차 시장 흐름을 JSON으로 설계하세요.
+
 [보름달국 현재 경제 상태]
 - 국가 기준금리: ${window.state.baseRate}%
-- 국가 특이 사항: ${window.state.macroContext || "특별 요인 없음"}
-- 접수된 제보 요약: ${newsString || "없음"}
-- 현재 기업: ${companiesString}
+- 국가 거시 상황 코멘트: ${window.state.macroContext || "(제시된 거시 상황 없음. AI가 스스로 현재 시장 심리, 기대감, 가상의 거시 경제 흐름을 적극적으로 상상하여 개입할 것)"}
+- 접수된 제보(찌라시/정보) 요약: ${newsString || "없음"}
+- 현재 기업 상태 (주식수가 많아지면 가치가 희석되어 주가 하락 요인, 적으면 희소성으로 상승 요인 등 자본시장 논리 적용):
+${companiesString}
 
 [연산 조건 가이드라인]
-1. changes: 제보 유효성을 반영하여 각 기업 가치의 등락률(pct, 소수점 1자리)을 부여하세요. reason 필드에 원인 작성.
-2. news: 학급 구성원들이 읽기 유익한 5줄 가량의 시황 보도 기사 2개 작성.
+1. 주가 변동 (changes): 제보된 내용뿐만 아니라, 선생님이 입력한 코멘트가 없더라도 AI 스스로 **가상의 실적 호조/악화, 거시 경제 이벤트(예: 유행 변화, 원자재 값 폭등 등), 발행 주식수에 따른 수급 변화** 등을 복합적으로 상상하여 각 기업 가치의 등락률(pct, 소수점 1자리)을 부여하세요. reason 필드에 그 구체적인 원인(AI가 상상한 내용 포함)을 적어주세요.
+2. 경제 뉴스/찌라시 (news): 학생들이 내일의 투자를 결정하는 데 **힌트**가 될 수 있도록 3~4개의 경제 뉴스 피드를 작성하세요. 단, 주가가 정확히 오를지 내릴지 직접적으로 말하면 안 되고, **아주 모호하고 은유적인 표현(애매한 힌트)**을 사용하여 아이들의 상상력과 추리력을 자극해야 합니다. (예: "A기업 공장 주변에 화물차들이 쉴 새 없이 오가고 있다는 소문이 돌고 있다...", "시장에 풀린 B기업의 주식 수가 너무 많은 것 아니냐는 우려의 목소리가 나온다" 등)
 3. 예금 금리 제안: 기준금리(${window.state.baseRate}%)를 바탕으로 은행 예금 금리(suggestedDepositRate) 도출 및 depositRateReasoning 작성.
 
-[출력 규격]
+[출력 규격] (마크다운 없이 순수 JSON 포맷만 반환하세요)
 {
-  "news": [{"title": "기사 제목", "content": "기사 상세 내용"}],
+  "news": [{"title": "기사 제목", "content": "기사 상세 내용 (모호한 힌트 포함)"}],
   "changes": [{"id": 1, "pct": 4.2, "reason": "이유 설명"}],
   "suggestedDepositRate": 3.2,
   "depositRateReasoning": "논거..."
@@ -652,13 +686,13 @@
         function generateRandomPreview() {
             let changes = window.state.companies.map(c => {
                 const move = (Math.random() * 12 - 6).toFixed(1);
-                return { id: c.id, pct: parseFloat(move), reason: "학급 자체 시중 수요 공급에 의한 균형 가격 재편성" };
+                return { id: c.id, pct: parseFloat(move), reason: "자체 수급 조절 및 가상 시뮬레이션에 의한 재편성" };
             });
             window.pendingAIResult = {
-                news: [{title: "보름달국 시장 장 마감 보고서 발간", content: "특별 자산 가치 과열 현상 없이 마감되었습니다."}],
+                news: [{title: "보름달국 시장, 알 수 없는 안개 속으로", content: "투자자들 사이에서 미묘한 긴장감이 흐르고 있습니다. 과연 내일의 태양은 어느 기업을 비출까요?"}],
                 changes: changes,
                 suggestedDepositRate: window.state.baseRate + 0.5,
-                depositRateReasoning: "기준금리에 예적금 가산 이자 마진을 가산한 수치입니다."
+                depositRateReasoning: "기준금리 기반 산출"
             };
             showPreviewModal(window.pendingAIResult);
         }
@@ -673,14 +707,14 @@
                     const sign = c.pct > 0 ? '▲' : (c.pct < 0 ? '▼' : '-');
                     html += `<div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                                 <div class="flex justify-between items-center mb-1">
-                                    <span class="font-bold text-slate-800">${comp.name}</span>
+                                    <span class="font-bold text-slate-800">${comp.name} <span class="text-xs text-slate-400 font-normal ml-1">(주식:${comp.shares||100}주)</span></span>
                                     <span class="font-black ${diffColor}">${comp.price.toLocaleString()}달 ➔ ${newPrice.toLocaleString()}달 (${sign}${Math.abs(c.pct)}%)</span>
                                 </div>
-                                <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>원인:</b> ${c.reason}</p>
+                                <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>AI 판단 원인:</b> ${c.reason}</p>
                              </div>`;
                 }
             });
-            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 정부 관보 뉴스</h3><div class="space-y-3">`;
+            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 찌라시/경제 뉴스 (학생 제공용 힌트)</h3><div class="space-y-3">`;
             result.news.forEach(n => {
                 html += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                             <h4 class="font-bold text-slate-800 mb-1">🗞️ ${n.title}</h4>
@@ -731,7 +765,7 @@
             btn.disabled = false;
             btn.innerText = "턴 마감 및 AI 분석 가동";
             window.pendingAIResult = null;
-            alert(`✅ 국정 승인 완료! 모든 기기에 Day ${window.state.day} 데이터가 동기화되었습니다.`);
+            alert(`✅ 국정 승인 완료! 내일 시장의 방향성을 암시하는 찌라시가 발행되었습니다.`);
         }
 
         window.cancelNextDay = function() {
@@ -753,7 +787,10 @@
                 const sign = diff > 0 ? '▲' : (diff < 0 ? '▼' : '-');
                 list.innerHTML += `
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-                        <div class="text-xs font-bold text-slate-400 mb-1">${c.name}</div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-slate-500">${c.name}</span>
+                            <span class="text-[10px] text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">발행: ${c.shares || 100}주</span>
+                        </div>
                         <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}달</div>
                         <div class="text-[12px] font-bold ${color} mt-1">${sign} ${Math.abs(diff).toLocaleString()}달 (${sign}${Math.abs(pct)}%)</div>
                     </div>`;
@@ -852,7 +889,6 @@
         window.saveApiKey = function() {
             const key = document.getElementById('gemini-api-key').value.trim();
             if(!key) return alert("키를 입력하세요.");
-            
             localStorage.setItem('my_secret_gemini_key', key); 
             alert("🔒 선생님 PC 브라우저에 안전하게 저장되었습니다.");
             document.getElementById('gemini-api-key').value = key;
@@ -867,30 +903,21 @@
             window.state.companies.forEach(c => { c.history = c.history.slice(0, target); c.price = c.history[c.history.length - 1]; });
             window.state.publicNews = window.state.publicNews.filter(n => { const nDay = typeof n === 'object' ? n.day : parseInt((n.match(/Day (\d+)/) || [0, 0])[1]); return nDay < target; });
             window.state.govAnnouncements = []; window.state.macroNewsText = "시간 연대기가 복구 회차로 귀환했습니다.";
-            set(interviewsRef, null); 
-            saveState(); alert(`Day ${target}(으)로 롤백 완료.`);
+            set(interviewsRef, null); saveState(); alert(`Day ${target}(으)로 롤백 완료.`);
         }
 
         window.resetToDayOne = function() { 
             if (confirm("서버의 모든 원장을 파기하고 전면 리셋하겠습니까?")) { 
-                window.state = { ...defaultMarketState };
-                set(interviewsRef, null);
-                saveState();
-                alert("서버 초기화 완료.");
+                window.state = { ...defaultMarketState }; set(interviewsRef, null); saveState(); alert("서버 초기화 완료.");
             } 
         }
 
         window.changeMyPassword = function() {
-            if (window.currentUser.role !== 'teacher') {
-                alert("🔒 최고 수준 보안이 적용되어 직접 비밀번호를 변경할 수 없습니다.\n비밀번호 변경이나 초기화는 관리자(선생님)에게 요청해 주세요.");
-                return;
-            }
+            if (window.currentUser.role !== 'teacher') return alert("🔒 최고 수준 보안이 적용되어 직접 비밀번호를 변경할 수 없습니다.");
             const newPw = prompt("새로운 관리자 비밀번호를 입력하세요:");
             if (newPw && newPw.trim() !== "") { 
                 const user = window.state.users.find(u => u.id === window.currentUser.id); 
-                user.pw = newPw.trim(); 
-                saveState(); 
-                alert("내부 데이터베이스 비밀번호 변경 완료.\n(참고: 파이어베이스 콘솔의 진짜 로그인 비밀번호는 콘솔에서 따로 바꿔주셔야 합니다)"); 
+                user.pw = newPw.trim(); saveState(); alert("내부 데이터베이스 비밀번호 변경 완료."); 
             }
         }
 
@@ -905,42 +932,26 @@
             window.state.users.push({ id, pw: '1234', name, role, companyId: role === 'employee' ? parseInt(companyId) : null });
             saveState();
             document.getElementById('new-user-id').value = ''; document.getElementById('new-user-name').value = '';
-            alert(`${name} 학생 계정 발급 완료 (초기 비밀번호: 1234)`);
         }
 
-        // 🚨 업데이트된 명단 일괄 생성 함수 (비밀번호 지정 기능 추가)
         window.addBulkUsers = function() {
             const text = document.getElementById('bulk-user-input').value.trim();
             if(!text) return alert("명단을 입력해주세요.");
             
             const lines = text.split('\n');
-            let addedCount = 0;
-            let skippedCount = 0;
+            let addedCount = 0; let skippedCount = 0;
             
             lines.forEach(line => {
-                // 공백, 탭, 쉼표 등을 기준으로 분리
                 const parts = line.split(/[\s,]+/).filter(p => p.trim() !== '');
                 if(parts.length >= 2) {
-                    const id = parts[0];
-                    const name = parts[1];
-                    // 세 번째 값이 있으면 비밀번호로, 없으면 '1234'로 지정
-                    const pw = parts.length >= 3 ? parts[2] : '1234'; 
-                    
-                    if(window.state.users.find(u => u.id === id)) {
-                        skippedCount++;
-                    } else {
-                        window.state.users.push({ id, pw: pw, name, role: 'citizen', companyId: null });
-                        addedCount++;
-                    }
+                    const id = parts[0]; const name = parts[1]; const pw = parts.length >= 3 ? parts[2] : '1234'; 
+                    if(window.state.users.find(u => u.id === id)) skippedCount++;
+                    else { window.state.users.push({ id, pw: pw, name, role: 'citizen', companyId: null }); addedCount++; }
                 }
             });
-            
             if (addedCount > 0) {
-                saveState();
-                document.getElementById('bulk-user-input').value = '';
-                alert(`총 ${addedCount}명의 학생 계정이 일괄 생성되었습니다!\n(중복/오류로 제외된 인원: ${skippedCount}명)`);
-            } else {
-                alert(`추가된 계정이 없습니다. 입력 형식(아이디 이름 비밀번호)을 다시 확인하시거나 이미 존재하는 아이디인지 확인하세요.`);
+                saveState(); document.getElementById('bulk-user-input').value = '';
+                alert(`총 ${addedCount}명의 학생 계정이 일괄 생성되었습니다!\n(제외된 인원: ${skippedCount}명)`);
             }
         }
 
@@ -974,12 +985,12 @@
             const user = window.state.users.find(u => u.id === id);
             if (user) {
                 user.name = newName; user.role = newRole; user.companyId = newRole === 'employee' ? parseInt(newCompanyId) : null;
-                saveState(); window.closeEditUserModal(); alert("수정 성공.");
+                saveState(); window.closeEditUserModal();
             }
         }
 
         window.deleteUser = function(id) {
-            if (id === 'teacher') return alert("제명 불가능합니다.");
+            if (id === 'teacher') return;
             if (confirm("해당 계정을 영구 제명하시겠습니까?")) { window.state.users = window.state.users.filter(u => u.id !== id); saveState(); }
         }
 
@@ -987,18 +998,14 @@
             const user = window.state.users.find(u => u.id === id);
             if (!user) return;
             const newPw = prompt(`${user.name} 학생의 새 비밀번호를 입력하세요:`, '1234');
-            if (newPw !== null && newPw.trim() !== "") {
-                user.pw = newPw.trim();
-                saveState();
-                alert(`${user.name} 학생의 비밀번호가 [${user.pw}]로 변경되었습니다.`);
-            }
+            if (newPw !== null && newPw.trim() !== "") { user.pw = newPw.trim(); saveState(); }
         }
 
         window.addCompany = function() {
             const name = document.getElementById('new-company-name').value.trim();
             const price = parseInt(document.getElementById('new-company-price').value);
             if(!name || isNaN(price)) return alert("정확히 입력하세요.");
-            window.state.companies.push({ id: Date.now(), name, price, history: Array(window.state.day).fill(price) });
+            window.state.companies.push({ id: Date.now(), name, price, shares: 100, history: Array(window.state.day).fill(price) });
             saveState();
             document.getElementById('new-company-name').value = ''; document.getElementById('new-company-price').value = '';
         }
@@ -1047,7 +1054,7 @@
             document.getElementById('company-admin-tbody').innerHTML = window.state.companies.map(c => `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="py-2">${c.name}</td>
-                    <td class="py-2 font-bold text-indigo-600">${c.price.toLocaleString()}달</td>
+                    <td class="py-2 font-bold text-indigo-600">${c.price.toLocaleString()}달 <span class="text-[10px] text-slate-400 font-normal">(${c.shares || 100}주)</span></td>
                     <td class="py-2">
                         <button onclick="editCompany(${c.id})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px]">수정</button>
                         <button onclick="deleteCompany(${c.id})" class="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] ml-1">상폐</button>
