@@ -129,10 +129,10 @@
                         <h3 class="font-bold text-rose-700 mb-4">✨ 국가 환경 설정 및 도구</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="text-xs font-bold text-slate-400">Gemini API Key</label>
+                                <label class="text-xs font-bold text-slate-400">Gemini API Key (선생님 PC 로컬 저장됨)</label>
                                 <div class="flex gap-2 mt-1">
                                     <input type="password" id="gemini-api-key" placeholder="API 키 입력" class="flex-1 border p-2 rounded-lg text-sm bg-slate-50 focus:bg-white">
-                                    <button onclick="saveApiKey()" class="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold hover:bg-slate-700">저장</button>
+                                    <button onclick="saveApiKey()" class="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold hover:bg-slate-700">로컬 저장</button>
                                 </div>
                             </div>
                             
@@ -264,20 +264,19 @@
     </div>
 
     <script type="module">
-        // Firebase 최신 v10 SDK 불러오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
         // =========================================================================
         // 🚨 여기에 선생님의 Firebase 웹 앱 설정(Config)을 복사해서 붙여넣으세요! 🚨
         const firebaseConfig = {
-            apiKey: "AIzaSyAR0g6Yl--aK1dSQCQf2svAbiW4VLDFnRQ",
-            authDomain: "gen-lang-client-0718553311.firebaseapp.com",
-            databaseURL: "https://gen-lang-client-0718553311-default-rtdb.firebaseio.com",
-            projectId: "gen-lang-client-0718553311",
-            storageBucket: "gen-lang-client-0718553311.firebasestorage.app",
-            messagingSenderId: "262295237425",
-            appId: "1:262295237425:web:01eed49e80797922883610"
+            apiKey: "여기에_API_KEY_입력",
+            authDomain: "여기에_AUTH_DOMAIN_입력",
+            databaseURL: "여기에_DATABASE_URL_입력",
+            projectId: "여기에_PROJECT_ID_입력",
+            storageBucket: "여기에_STORAGE_BUCKET_입력",
+            messagingSenderId: "여기에_SENDER_ID_입력",
+            appId: "여기에_APP_ID_입력"
         };
         // =========================================================================
 
@@ -285,9 +284,9 @@
         const db = getDatabase(app);
         const dbRef = ref(db, 'classStockState');
 
-        // 기본 초기 데이터
+        // 기본 초기 데이터 (apiKey 항목 삭제됨)
         const defaultState = {
-            day: 1, apiKey: "", baseRate: 2.0, macroContext: "",
+            day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
                 { id: 1, name: "계산 잘하는 은행", price: 100, history: [100] }, 
                 { id: 2, name: "태무산 신용평가회사", price: 100, history: [100] },
@@ -310,11 +309,9 @@
         window.chartInstance = null;
         window.pendingAIResult = null; 
 
-        // 1. 서버(Firebase) 연결 및 실시간 데이터 수신
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // 파이어베이스는 빈 배열을 삭제하므로 강제로 빈 배열을 만들어줍니다.
                 window.state = data;
                 if(!window.state.companies) window.state.companies = [];
                 if(!window.state.pendingInterviews) window.state.pendingInterviews = [];
@@ -322,7 +319,6 @@
                 if(!window.state.govAnnouncements) window.state.govAnnouncements = [];
                 if(!window.state.users) window.state.users = [];
                 
-                // 로그인 버튼 활성화
                 const loginBtn = document.getElementById('login-btn');
                 if (loginBtn && loginBtn.disabled) {
                     loginBtn.disabled = false;
@@ -333,29 +329,24 @@
                     document.getElementById('server-status').classList.replace('text-amber-500', 'text-green-500');
                 }
 
-                // 현재 로그인 유저 정보 동기화 (관리자가 비번/직업을 바꿀 수도 있으므로)
                 if (window.currentUser) {
                     const updatedUser = window.state.users.find(u => u.id === window.currentUser.id);
                     if (updatedUser) window.currentUser = updatedUser;
                     
-                    // 로그인 된 상태라면 즉시 화면 업데이트
                     if (!document.getElementById('dashboard').classList.contains('hidden')) {
                         updateUI();
                     }
                 }
             } else {
-                // 데이터베이스가 아예 비어있다면 초기 데이터 세팅
                 window.state = { ...defaultState };
                 saveState();
             }
         });
 
-        // 2. 상태 저장 함수 (Firebase로 전송)
         window.saveState = function() {
             set(dbRef, window.state);
         }
 
-        // 3. UI 및 비즈니스 로직 (기존 함수들 그대로 window 객체에 연결)
         window.login = function() {
             if(!window.state) return alert("서버와 연결 중입니다. 잠시만 기다려주세요.");
             const id = document.getElementById('login-id').value.trim();
@@ -391,9 +382,12 @@
 
             if (window.currentUser.role === 'teacher') {
                 document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('gemini-api-key').value = window.state.apiKey || "";
+                
+                // 파이어베이스가 아닌, 로컬 스토리지에서 키를 가져와서 보여줌
+                document.getElementById('gemini-api-key').value = localStorage.getItem('my_secret_gemini_key') || "";
+                
                 document.getElementById('base-rate-input').value = window.state.baseRate;
-                document.getElementById('macro-context-input').value = window.state.macroContext;
+                document.getElementById('macro-context-input').value = window.state.macroContext || "";
                 window.renderAdminTables();
             } else {
                 document.getElementById('admin-panel').classList.add('hidden');
@@ -531,7 +525,7 @@
             alert(alertMsg);
             document.getElementById('interview-text').value = '';
             if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
-            saveState(); // Firebase에 즉시 동기화
+            saveState();
         }
 
         window.processNextDay = async function() {
@@ -551,8 +545,11 @@
             }).join('\n');
             const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
 
-            if (!window.state.apiKey) {
-                alert("API 키가 존재하지 않아 기본 시뮬레이션 공식으로 모달을 생성합니다.");
+            // 선생님 PC 로컬 스토리지에서 API 키를 읽어옵니다.
+            const teacherSecretKey = localStorage.getItem('my_secret_gemini_key');
+
+            if (!teacherSecretKey) {
+                alert("API 키가 선생님 PC에 저장되어 있지 않아 기본 시뮬레이션 공식으로 모달을 생성합니다.");
                 generateRandomPreview();
                 return;
             }
@@ -577,7 +574,8 @@
   "suggestedDepositRate": 3.2,
   "depositRateReasoning": "논거..."
 }`;
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${window.state.apiKey}`, {
+                // 로컬 스토리지에서 가져온 키를 fetch 주소에 삽입합니다.
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${teacherSecretKey}`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
@@ -660,7 +658,7 @@
             window.state.pendingInterviews = [];
             window.state.govAnnouncements = []; 
             
-            saveState(); // Firebase에 데이터 전송 -> 즉시 모든 태블릿 화면 변경됨
+            saveState();
             
             document.getElementById('preview-modal').classList.add('hidden');
             const btn = document.getElementById('process-day-btn');
@@ -772,7 +770,16 @@
         }
 
         window.setFact = function(idx, status) { window.state.pendingInterviews[idx].status = status; saveState(); }
-        window.saveApiKey = function() { window.state.apiKey = document.getElementById('gemini-api-key').value; saveState(); alert("API 키가 서버에 저장되었습니다."); }
+
+        // ✅ API 키 저장 함수 변경 (로컬 스토리지 사용)
+        window.saveApiKey = function() {
+            const key = document.getElementById('gemini-api-key').value.trim();
+            if(!key) return alert("키를 입력하세요.");
+            
+            localStorage.setItem('my_secret_gemini_key', key); 
+            alert("🔒 선생님 PC 브라우저에 안전하게 저장되었습니다. (학생 기기로 공유 안 됨)");
+            document.getElementById('gemini-api-key').value = key;
+        }
         
         window.jumpToSpecificDay = function() {
             const target = parseInt(document.getElementById('jump-day-input').value);
