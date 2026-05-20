@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v9.0 (완벽 방어 RBAC 적용)</title>
+    <title>클래스 스탁 하이퍼 v9.5 (커스텀 기업 & 보안 적용)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -262,9 +262,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        // Auth 모듈 가져오기 (익명 인증 및 이메일 인증)
         import { getAuth, signInAnonymously, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-        // DB 모듈에 데이터 밀어넣기(push) 및 특정 업데이트(update) 기능 추가
         import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
         // =========================================================================
@@ -284,17 +282,21 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // 데이터베이스가 market(국가기반)과 interviews(의견채널)로 쪼개졌습니다.
         const marketRef = ref(db, 'classStockState/market');
         const interviewsRef = ref(db, 'classStockState/interviews');
 
-        // 기초 마켓 데이터
+        // 기초 마켓 데이터 (요청하신 8개 기업 반영)
         const defaultMarketState = {
             day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
                 { id: 1, name: "계산 잘하는 은행", price: 100, history: [100] }, 
                 { id: 2, name: "태무산 신용평가회사", price: 100, history: [100] },
-                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100] }
+                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100] },
+                { id: 4, name: "지우개 칠판 청소", price: 100, history: [100] },
+                { id: 5, name: "말랑카우 우유", price: 100, history: [100] },
+                { id: 6, name: "쫄병 인력사무소", price: 100, history: [100] },
+                { id: 7, name: "신데렐라 청소회사", price: 100, history: [100] },
+                { id: 8, name: "기름나는 마트", price: 100, history: [100] }
             ],
             publicNews: [], macroNewsText: "시장이 평온하게 시작되었습니다.",
             govAnnouncements: [],
@@ -303,14 +305,13 @@
             depositRateReasoning: "보름달국 경제 국가 시스템이 가동되었습니다."
         };
 
-        window.state = null; // 이제 window.state는 market 데이터를 의미합니다.
-        window.interviews = {}; // 학생들의 제보 데이터 목록
+        window.state = null; 
+        window.interviews = {}; 
         window.currentUser = null;
         window.chartInstance = null;
         window.pendingAIResult = null; 
-        window.db = db; // 외부 함수에서 쓰기 위해 노출
+        window.db = db; 
 
-        // 🟢 앱이 켜지자마자 배경에서 안전한 익명 로그인 실행
         signInAnonymously(auth).then(() => {
             const loginBtn = document.getElementById('login-btn');
             if (loginBtn) {
@@ -326,7 +327,6 @@
             alert("보안 서버 접근이 차단되었습니다. 학교 인터넷 설정을 확인하세요.");
         });
 
-        // 선생님만 고칠 수 있는 Market 데이터 수신
         onValue(marketRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -347,7 +347,6 @@
             }
         });
 
-        // 누구나 쓰고 읽을 수 있는 Interviews 데이터 수신
         onValue(interviewsRef, (snapshot) => {
             window.interviews = snapshot.val() || {};
             if (window.currentUser && window.currentUser.role === 'teacher' && !document.getElementById('dashboard').classList.contains('hidden')) {
@@ -355,19 +354,16 @@
             }
         });
 
-        // 🌟 저장 시 'market' 경로만 덮어씀
         window.saveState = function() {
             set(marketRef, window.state).catch(e => alert("권한 없음: 선생님(관리자)만 수정할 수 있습니다."));
         }
 
-        // 🌟 로그인 로직 분리 (선생님은 진짜 이메일 로그인, 학생은 기존 검사)
         window.login = function() {
             if(!window.state) return alert("서버와 연결 중입니다.");
             const id = document.getElementById('login-id').value.trim();
             const pw = document.getElementById('login-pw').value.trim();
             
             if (id === 'teacher') {
-                // 선생님 계정 로그인 (파이어베이스 콘솔에 등록한 이메일 사용)
                 signInWithEmailAndPassword(auth, 'teacher@moon.com', pw)
                     .then(() => {
                         window.currentUser = { id: 'teacher', name: '선생님', role: 'teacher' };
@@ -378,7 +374,6 @@
                         alert("장관님(교사) 인증 비밀번호가 틀렸습니다.");
                     });
             } else {
-                // 학생은 읽어온 유저 DB에서 확인 (익명 토큰으로 접근 중)
                 const user = window.state.users.find(u => u.id === id && u.pw === pw);
                 if (user) {
                     window.currentUser = user;
@@ -513,7 +508,6 @@
             else ta.placeholder = "의견을 기입하세요...";
         }
 
-        // 🌟 보안 핵심: 의견 제출 시 덮어쓰기가 아닌 'push' 메서드를 통해 DB에 한 줄씩 밀어 넣음
         window.submitInterview = function() {
             const text = document.getElementById('interview-text').value.trim();
             const companyIdValue = document.getElementById('target-company').value;
@@ -535,7 +529,6 @@
                 if(comp) compName = comp.name;
             }
 
-            // 학생은 market에 접근할 수 없으므로, 모든 데이터를 interviews로 보냅니다.
             const payload = {
                 author: window.currentUser.name,
                 role: effectiveRole,
@@ -547,7 +540,8 @@
             };
 
             push(interviewsRef, payload).then(() => {
-                alert("의견이 안전하게 국정 통계국으로 전송되었습니다.");
+                // 🚨 메시지를 부드럽게 수정
+                alert("의견이 접수 되었습니다.");
                 document.getElementById('interview-text').value = '';
                 if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
             }).catch(e => {
@@ -565,7 +559,6 @@
             btn.disabled = true;
             btn.innerText = "AI 보름달국 경제 상황 종합 분석 중...";
 
-            // 객체 형태의 interviews 데이터를 배열로 변환
             const interviewsArray = Object.keys(window.interviews).map(key => ({ ...window.interviews[key], key }));
             const validInterviews = interviewsArray.filter(i => i.status !== 'false');
             
@@ -681,7 +674,6 @@
                 window.state.publicNews.unshift({ day: window.state.day, title: n.title, content: n.content });
             });
 
-            // 정부 공식 정책 발표 처리 (선생님이 삭제하지 않은 isAnnounce 제보들)
             window.state.govAnnouncements = [];
             Object.keys(window.interviews).forEach(key => {
                 const i = window.interviews[key];
@@ -697,8 +689,8 @@
             window.state.depositRateReasoning = result.depositRateReasoning;
             window.state.day++;
             
-            saveState(); // 마켓 정보 갱신
-            set(interviewsRef, null); // 턴이 끝났으니 인터뷰(제보) 내역 초기화
+            saveState(); 
+            set(interviewsRef, null); 
             
             document.getElementById('preview-modal').classList.add('hidden');
             const btn = document.getElementById('process-day-btn');
@@ -819,7 +811,6 @@
             }).join('');
         }
 
-        // 🌟 특정 인터뷰 상태만 부분 업데이트 (update 메서드 활용)
         window.setFact = function(key, status) { 
             update(ref(window.db, `classStockState/interviews/${key}`), { status: status }); 
         }
@@ -855,7 +846,6 @@
             } 
         }
 
-        // 🌟 보안 강화: 학생은 비밀번호 변경 권한 박탈 (데이터베이스 읽기 전용화 때문)
         window.changeMyPassword = function() {
             if (window.currentUser.role !== 'teacher') {
                 alert("🔒 최고 수준 보안이 적용되어 직접 비밀번호를 변경할 수 없습니다.\n비밀번호 변경이나 초기화는 관리자(선생님)에게 요청해 주세요.");
@@ -923,10 +913,15 @@
             if (confirm("해당 계정을 영구 제명하시겠습니까?")) { window.state.users = window.state.users.filter(u => u.id !== id); saveState(); }
         }
 
-        window.resetUserPw = function(id) {
-            if (confirm("비밀번호를 '1234'로 긴급 재설정합니까?")) {
-                const user = window.state.users.find(u => u.id === id);
-                if (user) { user.pw = '1234'; saveState(); alert("초기화 완료."); }
+        // 🚨 비밀번호 변경 기능 추가 (선생님이 학생의 PW를 임의 지정할 수 있음)
+        window.changeStudentPw = function(id) {
+            const user = window.state.users.find(u => u.id === id);
+            if (!user) return;
+            const newPw = prompt(`${user.name} 학생의 새 비밀번호를 입력하세요:`, '1234');
+            if (newPw !== null && newPw.trim() !== "") {
+                user.pw = newPw.trim();
+                saveState();
+                alert(`${user.name} 학생의 비밀번호가 [${user.pw}]로 변경되었습니다.`);
             }
         }
 
@@ -971,7 +966,7 @@
                             <td class="py-2 space-y-1">
                                 <div class="flex justify-center gap-1">
                                     <button onclick="editUser('${u.id}')" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px]">수정</button>
-                                    <button onclick="resetUserPw('${u.id}')" class="bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px]">초기화</button>
+                                    <button onclick="changeStudentPw('${u.id}')" class="bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px]">PW변경</button>
                                 </div>
                                 <div class="flex justify-center">
                                     <button onclick="deleteUser('${u.id}')" class="bg-red-100 text-red-600 px-4 py-1 rounded text-[10px]">제명</button>
