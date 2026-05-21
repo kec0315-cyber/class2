@@ -331,15 +331,27 @@
         window.pendingAIResult = null; 
         window.db = db; 
 
+        // 🔥 로그인 화면 상태 업데이트 로직이 반영된 인증 부분
         signInAnonymously(auth).then(() => {
             const loginBtn = document.getElementById('login-btn');
+            const statusText = document.getElementById('server-status');
+            
             if (loginBtn) {
                 loginBtn.disabled = false;
                 loginBtn.innerText = "시스템 접속";
                 loginBtn.classList.replace('bg-slate-400', 'bg-indigo-600');
             }
+            if (statusText) {
+                statusText.innerText = "✅ 서버 연결 및 보안 인증 완료";
+                statusText.classList.replace('text-amber-500', 'text-emerald-500'); 
+            }
         }).catch((error) => {
             console.error(error);
+            const statusText = document.getElementById('server-status');
+            if (statusText) {
+                statusText.innerText = "❌ 서버 연결 실패";
+                statusText.classList.replace('text-amber-500', 'text-red-500');
+            }
             alert("보안 서버 접근이 차단되었습니다.");
         });
 
