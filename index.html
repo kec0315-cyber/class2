@@ -62,7 +62,7 @@
                         <canvas id="marketChart" height="130"></canvas>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div id="public-investment-board-container" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h2 class="text-lg font-black text-slate-800 mb-1 flex items-center gap-2">🎯 보름달국 실시간 투자 자산 현황판</h2>
                         <p class="text-xs text-slate-400 mb-4">보름달국 모든 국민들의 주식 평가금액과 수익률을 실시간 추적합니다. (사람별 분류)</p>
                         <div id="public-investment-board" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto scrollbar-hide pr-1">
@@ -311,13 +311,13 @@
         // =========================================================================
         // 🚨 선생님의 Firebase 웹 앱 설정(Config)을 복사해서 붙여넣으세요! 🚨
         const firebaseConfig = {
-            apiKey: "AIzaSyAR0g6Yl--aK1dSQCQf2svAbiW4VLDFnRQ",
-            authDomain: "gen-lang-client-0718553311.firebaseapp.com",
-            databaseURL: "https://gen-lang-client-0718553311-default-rtdb.firebaseio.com",
-            projectId: "gen-lang-client-0718553311",
-            storageBucket: "gen-lang-client-0718553311.firebasestorage.app",
-            messagingSenderId: "262295237425",
-            appId: "1:262295237425:web:01eed49e80797922883610"
+            apiKey: "여기에_API_KEY_입력",
+            authDomain: "여기에_AUTH_DOMAIN_입력",
+            databaseURL: "여기에_DATABASE_URL_입력",
+            projectId: "여기에_PROJECT_ID_입력",
+            storageBucket: "여기에_STORAGE_BUCKET_입력",
+            messagingSenderId: "여기에_SENDER_ID_입력",
+            appId: "여기에_APP_ID_입력"
         };
         // =========================================================================
 
@@ -460,16 +460,17 @@
         function updateUI() {
             if(!window.currentUser || !window.state) return;
 
-            document.getElementById('current-user-name').innerText = window.currentUser.name; // innerText는 자동 이스케이프됨
+            document.getElementById('current-user-name').innerText = window.currentUser.name; 
             let roleLabel = "일반 시민";
             if (window.currentUser.role === 'teacher') roleLabel = "행정부 장관 (교사)";
             if (window.currentUser.role === 'gov') roleLabel = "보름달국 공무원";
             if (window.currentUser.role === 'employee') {
                 const compName = window.state.companies.find(c => c.id == window.currentUser.companyId)?.name || "소속 없음";
-                roleLabel = `소속 직원 (${compName})`; // Text Node 처리
+                roleLabel = `소속 직원 (${compName})`; 
             }
             document.getElementById('current-user-role-display').innerText = roleLabel;
 
+            // 선생님 전용 패널 활성화
             if (window.currentUser.role === 'teacher') {
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('gemini-api-key').value = localStorage.getItem('my_secret_gemini_key') || "";
@@ -482,7 +483,16 @@
                 document.getElementById('admin-panel').classList.add('hidden');
             }
 
-            renderInvestmentDashboard();
+            // 🔒 [권한 보완] 실시간 투자 자산 현황판 제어: 교사(teacher) 혹은 은행원(isBankEmployee)에게만 표시
+            const myCompany = window.state.companies.find(c => c.id == window.currentUser.companyId);
+            const isBankEmployee = window.currentUser.role === 'employee' && myCompany && myCompany.name.includes('은행');
+            
+            if (window.currentUser.role === 'teacher' || isBankEmployee) {
+                document.getElementById('public-investment-board-container').classList.remove('hidden');
+                renderInvestmentDashboard();
+            } else {
+                document.getElementById('public-investment-board-container').classList.add('hidden');
+            }
 
             document.getElementById('employee-persona-label').classList.add('hidden');
             document.getElementById('gov-official-persona-label').classList.add('hidden');
@@ -527,6 +537,7 @@
             }
         }
 
+        // ⭐ 교사 전용 투자 기록 셀렉트 구성
         function renderTeacherInvestmentPanel() {
             const investorSelect = document.getElementById('investor-select');
             const companySelect = document.getElementById('investment-company-select');
@@ -540,6 +551,7 @@
             }
         }
 
+        // ⭐ 선생님의 전산 수동 등록 (은행원 기능 이관)
         window.addInvestmentByTeacher = function() {
             const userId = document.getElementById('investor-select').value;
             const companyId = parseInt(document.getElementById('investment-company-select').value);
@@ -873,7 +885,7 @@ ${companiesString}
                              </div>`;
                 }
             });
-            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 찌라시/경제 뉴스 (학생 제공용 힌트)</h3><div class="space-y-3">`;
+            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 찌라시/경제 뉴스</h3><div class="space-y-3">`;
             result.news.forEach(n => {
                 html += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                             <h4 class="font-bold text-slate-800 mb-1">🗞️ ${window.escapeHTML(n.title)}</h4>
@@ -1153,6 +1165,7 @@ ${companiesString}
             }
         }
 
+        // ⭐ 버그 픽스: 제명 시 유령 자산 동시 삭제 로직 (Cascade Delete)
         window.deleteUser = function(id) {
             if (id === 'teacher') return;
             if (confirm("해당 계정을 영구 제명하시겠습니까?\n이 학생의 전체 주식 투자 내역 또한 시스템에서 일괄 파기됩니다.")) { 
