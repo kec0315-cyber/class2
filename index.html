@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 스탁 하이퍼 v9.8 (은행 주식수 관리 & AI 힌트 피드)</title>
+    <title>클래스 스탁 하이퍼 v9.9 (종합 증권 전산망 & AI 힌트 피드)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -62,11 +62,35 @@
                         <canvas id="marketChart" height="130"></canvas>
                     </div>
 
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h2 class="text-lg font-black text-slate-800 mb-1 flex items-center gap-2">🎯 보름달국 실시간 투자 자산 현황판</h2>
+                        <p class="text-xs text-slate-400 mb-4">보름달국 모든 국민들의 주식 평가금액과 수익률을 실시간 추적합니다. (사람별 분류)</p>
+                        <div id="public-investment-board" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto scrollbar-hide pr-1">
+                            </div>
+                    </div>
+
                     <div id="bank-employee-panel" class="hidden bg-emerald-50 p-6 rounded-2xl shadow-sm border-2 border-emerald-200">
-                        <h2 class="text-lg font-black text-emerald-800 mb-2 flex items-center gap-2">🏦 중앙은행 기업 주식(발행량) 관리 데스크</h2>
-                        <p class="text-xs text-emerald-600 mb-4">각 기업의 총 발행 주식수를 조절하여 유동성을 관리하세요. 주식수가 늘어나면 가치(주가)가 희석될 수 있습니다.</p>
-                        <div id="bank-shares-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
-                        <button onclick="saveSharesFromBank()" class="mt-4 w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition shadow-md">주식 발행량 일괄 적용하기</button>
+                        <h2 class="text-lg font-black text-emerald-800 mb-1 flex items-center gap-2">🏦 중앙은행 및 증권 전산 거래 등록 데스크</h2>
+                        <p class="text-xs text-emerald-600 mb-4">국민(학생)이 주식을 매수하거나 매도했을 때, 거래 내역을 정확히 기록하여 국가 원장에 반영해 주세요.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-4 rounded-xl border border-emerald-100 mb-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">👤 투자자(국민) 선택</label>
+                                <select id="investor-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">🏢 투자 종목(증권) 선택</label>
+                                <select id="investment-company-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">💰 총 투자 금액 (원금 / 달)</label>
+                                <input type="number" id="invest-amount-input" placeholder="예시: 500" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">📊 매수 주식 수 (수량 / 주)</label>
+                                <input type="number" id="invest-shares-input" placeholder="예시: 5" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
+                            </div>
+                        </div>
+                        <button onclick="addInvestmentFromBank()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition shadow-md">📈 증권 계좌 투자 기록 등록 및 수정</button>
                     </div>
                 </div>
 
@@ -304,7 +328,6 @@
         const marketRef = ref(db, 'classStockState/market');
         const interviewsRef = ref(db, 'classStockState/interviews');
 
-        // 기본 기업 데이터에 shares(주식수) 항목 추가 (기본 100주)
         const defaultMarketState = {
             day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
@@ -321,7 +344,8 @@
             govAnnouncements: [],
             users: [ { id: 'teacher', pw: '1234', name: '선생님', role: 'teacher', companyId: null } ],
             suggestedDepositRate: 2.5,
-            depositRateReasoning: "보름달국 경제 국가 시스템이 가동되었습니다."
+            depositRateReasoning: "보름달국 경제 국가 시스템이 가동되었습니다.",
+            investments: [] // 국민 실시간 투자 내역 저장 어레이
         };
 
         window.state = null; 
@@ -331,7 +355,7 @@
         window.pendingAIResult = null; 
         window.db = db; 
 
-        // 🔥 로그인 화면 상태 업데이트 로직이 반영된 인증 부분
+        // 파이어베이스 익명 서버 인증 및 UI 색상 자동 전환 피드
         signInAnonymously(auth).then(() => {
             const loginBtn = document.getElementById('login-btn');
             const statusText = document.getElementById('server-status');
@@ -360,12 +384,12 @@
             if (data) {
                 window.state = data;
                 if(!window.state.companies) window.state.companies = [];
-                // 레거시 호환을 위해 shares가 없는 기업은 100으로 초기화
                 window.state.companies.forEach(c => { if(!c.shares) c.shares = 100; });
                 
                 if(!window.state.publicNews) window.state.publicNews = [];
                 if(!window.state.govAnnouncements) window.state.govAnnouncements = [];
                 if(!window.state.users) window.state.users = [];
+                if(!window.state.investments) window.state.investments = []; // 방어 코드
                 
                 if (window.currentUser) {
                     const updatedUser = window.state.users.find(u => u.id === window.currentUser.id);
@@ -391,7 +415,7 @@
         });
 
         window.saveState = function() {
-            set(marketRef, window.state).catch(e => alert("권한 없음: 관리자/권한자만 수정할 수 있습니다."));
+            set(marketRef, window.state).catch(e => alert("권한 없음: 관리자 혹은 유효 권한자만 수정 가능합니다."));
         }
 
         window.login = function() {
@@ -432,7 +456,7 @@
             }
             document.getElementById('current-user-role-display').innerText = roleLabel;
 
-            // 관리자 패널 표시
+            // 관리자 패널 처리
             if (window.currentUser.role === 'teacher') {
                 document.getElementById('admin-panel').classList.remove('hidden');
                 document.getElementById('gemini-api-key').value = localStorage.getItem('my_secret_gemini_key') || "";
@@ -444,16 +468,19 @@
                 document.getElementById('admin-panel').classList.add('hidden');
             }
 
-            // 은행 직원 특수 권한 (이름에 '은행'이 들어가거나 ID가 1인 기업 소속일 때)
+            // 🏦 계산 잘하는 은행 직원 전용 특수 권한 활성화 판단
             const myCompany = window.state.companies.find(c => c.id == window.currentUser.companyId);
             const isBankEmployee = window.currentUser.role === 'employee' && myCompany && myCompany.name.includes('은행');
             
             if (isBankEmployee) {
                 document.getElementById('bank-employee-panel').classList.remove('hidden');
-                renderBankSharesPanel();
+                renderBankInvestmentPanel();
             } else {
                 document.getElementById('bank-employee-panel').classList.add('hidden');
             }
+
+            // 전 국민 실시간 투자 현황판 렌더링 (언제나 작동)
+            renderInvestmentDashboard();
 
             // 페르소나 선택 UI 처리
             document.getElementById('employee-persona-label').classList.add('hidden');
@@ -499,36 +526,157 @@
             }
         }
 
-        // 은행 직원용 주식수 관리 UI
-        function renderBankSharesPanel() {
-            const list = document.getElementById('bank-shares-list');
-            list.innerHTML = window.state.companies.map(c => `
-                <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 flex flex-col justify-between">
-                    <span class="text-xs font-bold text-slate-700 mb-1">${c.name}</span>
-                    <div class="flex items-center gap-2 mt-1">
-                        <input type="number" id="bank-share-input-${c.id}" value="${c.shares || 100}" class="w-full border p-1 rounded text-sm text-right focus:border-emerald-400 outline-none">
-                        <span class="text-xs text-slate-500">주</span>
-                    </div>
-                </div>
-            `).join('');
+        // 🏦 은행원용 투자 등록 데스크 셀렉트박스 파퓰레이트
+        function renderBankInvestmentPanel() {
+            const investorSelect = document.getElementById('investor-select');
+            const companySelect = document.getElementById('investment-company-select');
+            
+            if (investorSelect && window.state.users) {
+                const students = window.state.users.filter(u => u.id !== 'teacher');
+                investorSelect.innerHTML = students.map(u => `<option value="${u.id}">${u.name} (${u.id})</option>`).join('');
+            }
+            if (companySelect && window.state.companies) {
+                companySelect.innerHTML = window.state.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
         }
 
-        // 은행 직원이 주식수 저장
-        window.saveSharesFromBank = function() {
-            let updated = false;
-            window.state.companies.forEach(c => {
-                const input = document.getElementById(`bank-share-input-${c.id}`);
-                if (input) {
-                    const val = parseInt(input.value);
-                    if (!isNaN(val) && val > 0) {
-                        c.shares = val;
-                        updated = true;
-                    }
+        // 🏦 은행원의 투자 장부 등록 액션
+        window.addInvestmentFromBank = function() {
+            const userId = document.getElementById('investor-select').value;
+            const companyId = parseInt(document.getElementById('investment-company-select').value);
+            const totalInvested = parseInt(document.getElementById('invest-amount-input').value);
+            const sharesCount = parseInt(document.getElementById('invest-shares-input').value);
+
+            if (!userId || isNaN(companyId) || isNaN(totalInvested) || isNaN(sharesCount) || totalInvested < 0 || sharesCount <= 0) {
+                return alert("정확한 총투자 금액과 매수 주식 수를 입력하세요.");
+            }
+
+            const user = window.state.users.find(u => u.id === userId);
+            const company = window.state.companies.find(c => c.id === companyId);
+            if (!user || !company) return alert("국민 혹은 기업 전산 정보 로드 실패.");
+
+            if (!window.state.investments) window.state.investments = [];
+
+            // 기존 동일 인물의 동일 종목 투자 여부 체크
+            const existIdx = window.state.investments.findIndex(inv => inv.userId === userId && inv.companyId === companyId);
+            
+            if (existIdx > -1) {
+                if (confirm(`${user.name} 국민의 기존 [${company.name}] 투자 데이터가 존재합니다. 새로운 장부 내용으로 덮어쓰시겠습니까?`)) {
+                    window.state.investments[existIdx] = { userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount };
+                } else { return; }
+            } else {
+                window.state.investments.push({ userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount });
+            }
+
+            saveState();
+            alert(`✅ 은행 장부 등록 완료: ${user.name} -> ${company.name} [${sharesCount}주]`);
+            document.getElementById('invest-amount-input').value = '';
+            document.getElementById('invest-shares-input').value = '';
+        }
+
+        // 🎯 실시간 전 국민 투자 자산 현황판 렌더링 (사람별 분류)
+        function renderInvestmentDashboard() {
+            const board = document.getElementById('public-investment-board');
+            if (!board) return;
+
+            if (!window.state.investments || window.state.investments.length === 0) {
+                board.innerHTML = `<div class="col-span-full p-8 text-center text-slate-300 text-sm font-medium bg-slate-50 rounded-xl border border-dashed">국가 원장에 기록된 실시간 국민 주식 투자 자산이 없습니다.</div>`;
+                return;
+            }
+
+            // 사람(userId) 기준으로 그룹 바인딩
+            const grouped = {};
+            window.state.investments.forEach(inv => {
+                if (!grouped[inv.userId]) {
+                    grouped[inv.userId] = { userName: inv.userName, items: [] };
                 }
+                grouped[inv.userId].items.push(inv);
             });
-            if (updated) {
+
+            // 현재 접속자가 은행원 또는 장관인지 판별하여 권한 부여 (삭제 ❌ 기능용)
+            const myCompany = window.state.companies.find(c => c.id == window.currentUser?.companyId);
+            const isManager = window.currentUser?.role === 'teacher' || (window.currentUser?.role === 'employee' && myCompany && myCompany.name.includes('은행'));
+
+            let html = '';
+
+            for (const userId in grouped) {
+                const group = grouped[userId];
+                let rowsHtml = '';
+                let userTotalInvest = 0;
+                let userTotalEval = 0;
+
+                group.items.forEach(inv => {
+                    const currentComp = window.state.companies.find(c => c.id === inv.companyId);
+                    const currentPrice = currentComp ? currentComp.price : 0;
+                    
+                    const evaluation = inv.sharesCount * currentPrice; // 평가금액 = 주식수 * 현재가
+                    const profitLoss = evaluation - inv.totalInvested; // 손익 = 평가금액 - 총투자
+                    
+                    userTotalInvest += inv.totalInvested;
+                    userTotalEval += evaluation;
+
+                    const plColor = profitLoss > 0 ? 'text-red-500 font-bold' : (profitLoss < 0 ? 'text-blue-500 font-bold' : 'text-slate-500');
+                    const plSign = profitLoss > 0 ? '+' : '';
+                    const deleteBtn = isManager ? `<button onclick="deleteInvestment('${inv.userId}', ${inv.companyId})" class="text-red-400 hover:text-red-600 font-bold ml-2">❌</button>` : '';
+
+                    rowsHtml += `
+                        <tr class="border-b text-xs hover:bg-white transition text-center">
+                            <td class="py-2 text-left pl-2 font-medium text-slate-700">${inv.companyName} <span class="text-[10px] text-slate-400 font-normal">(${inv.sharesCount}주)</span></td>
+                            <td class="py-2 text-right font-mono">${inv.totalInvested.toLocaleString()}달</td>
+                            <td class="py-2 text-right font-mono text-indigo-600 font-semibold">${evaluation.toLocaleString()}달</td>
+                            <td class="py-2 text-right font-mono ${plColor}">${plSign}${profitLoss.toLocaleString()}달</td>
+                            ${isManager ? `<td class="py-2 text-center">${deleteBtn}</td>` : ''}
+                        </tr>
+                    `;
+                });
+
+                const groupPL = userTotalEval - userTotalInvest;
+                const groupPLColor = groupPL > 0 ? 'text-red-600 font-black' : (groupPL < 0 ? 'text-blue-600 font-black' : 'text-slate-600 font-bold');
+                const groupPLSign = groupPL > 0 ? '+' : '';
+
+                html += `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2 border-b border-slate-200 pb-1.5">
+                                <span class="font-black text-sm text-indigo-950">👤 ${group.userName} <span class="text-[11px] text-slate-400 font-normal">(${userId})</span></span>
+                                <span class="text-xs bg-white px-2 py-0.5 rounded border font-semibold">총손익: <span class="${groupPLColor}">${groupPLSign}${groupPL.toLocaleString()}달</span></span>
+                            </div>
+                            <table class="w-full text-collapse">
+                                <thead>
+                                    <tr class="text-[10px] text-slate-400 border-b text-center font-bold">
+                                        <th class="py-1 text-left pl-2">증권명</th>
+                                        <th class="py-1 text-right">총투자</th>
+                                        <th class="py-1 text-right">평가금액</th>
+                                        <th class="py-1 text-right">손익</th>
+                                        ${isManager ? `<th class="py-1 w-6">🔧</th>` : ''}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3 pt-2 bg-indigo-50/50 rounded-lg p-2 text-[11px] font-bold text-slate-700 flex justify-between">
+                            <span>계좌 합계</span>
+                            <div class="flex gap-3 font-mono">
+                                <span>원금: ${userTotalInvest.toLocaleString()}달</span>
+                                <span class="text-indigo-700">평가: ${userTotalEval.toLocaleString()}달</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            board.innerHTML = html;
+        }
+
+        // ❌ 특정 투자 내역 파기 처리 (은행원 / 선생님 권한)
+        window.deleteInvestment = function(userId, companyId) {
+            if (!confirm("해당 학생의 특정 투자 기록을 전면 파기하시겠습니까?")) return;
+            if (window.state.investments) {
+                window.state.investments = window.state.investments.filter(inv => !(inv.userId === userId && inv.companyId === companyId));
                 saveState();
-                alert("✅ 중앙은행 명의로 각 기업 발행 주식수가 성공적으로 업데이트 되었습니다.");
+                alert("국가 증권 장부에서 내역이 정상적으로 완전 삭제되었습니다.");
             }
         }
 
@@ -627,7 +775,6 @@
             });
         }
 
-        // 🚨 AI 프롬프트 강화: 상상력과 힌트 부여
         window.processNextDay = async function() {
             window.state.baseRate = parseFloat(document.getElementById('base-rate-input').value) || 2.0;
             window.state.macroContext = document.getElementById('macro-context-input').value.trim();
@@ -780,6 +927,48 @@ ${companiesString}
             alert(`✅ 국정 승인 완료! 내일 시장의 방향성을 암시하는 찌라시가 발행되었습니다.`);
         }
 
+        window.applyNextDay = function() {
+            if(!window.pendingAIResult) return;
+            const result = window.pendingAIResult;
+
+            result.changes.forEach(c => {
+                const target = window.state.companies.find(comp => comp.id === c.id);
+                if (target) {
+                    target.price = Math.round(target.price * (1 + (c.pct / 100)));
+                    target.history.push(target.price);
+                }
+            });
+            
+            result.news.forEach(n => {
+                window.state.publicNews.unshift({ day: window.state.day, title: n.title, content: n.content });
+            });
+
+            window.state.govAnnouncements = [];
+            Object.keys(window.interviews).forEach(key => {
+                const i = window.interviews[key];
+                if (i.isAnnounce && i.status !== 'false') {
+                    const targetLabel = i.companyId ? `[${i.compName} 관련]` : `[전체 국정]`;
+                    window.state.govAnnouncements.push(`[${window.state.day}일자 공지] ${targetLabel} ${i.text}`);
+                    window.state.publicNews.unshift({ day: window.state.day, title: `🚨 [정부 긴급발표] ${targetLabel} 관보 하달`, content: i.text });
+                }
+            });
+
+            window.state.macroNewsText = result.news[0].title;
+            window.state.suggestedDepositRate = result.suggestedDepositRate;
+            window.state.depositRateReasoning = result.depositRateReasoning;
+            window.state.day++;
+            
+            saveState(); 
+            set(interviewsRef, null); 
+            
+            document.getElementById('preview-modal').classList.add('hidden');
+            const btn = document.getElementById('process-day-btn');
+            btn.disabled = false;
+            btn.innerText = "턴 마감 및 AI 분석 가동";
+            window.pendingAIResult = null;
+            alert(`✅ 국정 승인 완료! 내일 시장의 방향성을 암시하는 찌라시가 발행되었습니다.`);
+        }
+
         window.cancelNextDay = function() {
             window.pendingAIResult = null;
             document.getElementById('preview-modal').classList.add('hidden');
@@ -865,7 +1054,7 @@ ${companiesString}
             const keys = Object.keys(window.interviews);
             
             if(keys.length === 0) {
-                list.innerHTML = `<p class="text-slate-400 text-xs text-center py-4">접수된 의견이 없습니다.</p>`;
+                list.innerHTML = `<p class="text-slate-400 text-xs text-center py-4">접수된 의견이 없습니다.</p>';
                 return;
             }
 
