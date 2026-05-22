@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v10.1 (주식 거래소 & 뉴스 피드)</title>
+    <title>우리 반 주식 시장 v10.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -54,7 +54,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📈 우리 반 회사들의 주식 가격</h2>
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📈 우리 반 회사들의 주식 가격 (1달 기준)</h2>
                         <div id="company-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                     </div>
                     
@@ -64,7 +64,7 @@
 
                     <div id="public-investment-board-container" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h2 class="text-lg font-black text-slate-800 mb-1 flex items-center gap-2">🎯 친구들의 주식 통장 현황판</h2>
-                        <p class="text-xs text-slate-400 mb-4">반 친구들이 산 주식의 현재 가치와 이익/손해를 실시간으로 확인합니다.</p>
+                        <p class="text-xs text-slate-400 mb-4">반 친구들이 투자한 원금과 주가 변동에 맞추어 실시간으로 변하는 평가 금액을 확인합니다.</p>
                         <div id="public-investment-board" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto scrollbar-hide pr-1"></div>
                     </div>
                 </div>
@@ -132,22 +132,22 @@
 
                 <div class="bg-emerald-50 p-5 rounded-xl shadow-sm border-2 border-emerald-200 mb-8">
                     <h3 class="font-black text-emerald-800 mb-1 flex items-center gap-2">📊 선생님 전용 주식 직접 기록 데스크</h3>
-                    <p class="text-xs text-emerald-600 mb-4">학생들의 오프라인 주식 거래 내용을 입력하면, <b>살 수 있는 주식 수가 프로그램 내부에서 자동으로 계산</b>되어 장부에 기록됩니다.</p>
+                    <p class="text-xs text-emerald-600 mb-4">학생들이 투자를 원하는 만큼의 **금액**을 입력해 주세요. 주식 수 개념 없이 주가 상승/하락률에 맞춰 가치가 자동으로 변동됩니다.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-emerald-100">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">👤 학생(투자자) 선택</label>
                             <select id="investor-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">🏢 회사 주식 선택</label>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">🏢 투자할 회사 선택</label>
                             <select id="investment-company-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">💰 투자한 금액 (달)</label>
-                            <input type="number" id="invest-amount-input" placeholder="금액 입력" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">💰 투자 원금 입력 (달)</label>
+                            <input type="number" id="invest-amount-input" placeholder="원금 입력" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
                         </div>
                     </div>
-                    <button onclick="addInvestmentByTeacher()" class="mt-3 w-full bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm">장부에 등록하기 (기존 주식 수에 더해집니다)</button>
+                    <button onclick="addInvestmentByTeacher()" class="mt-3 w-full bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm">장부에 투자금 등록하기 (기존 투자금에 더해집니다)</button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -236,7 +236,7 @@
                         <div class="max-h-40 overflow-y-auto border-t border-slate-100 scrollbar-hide">
                             <table class="w-full text-xs text-center border-collapse">
                                 <thead>
-                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">회사명</th><th class="py-2 text-slate-500">현재 주가(총 주식수)</th><th class="py-2 text-slate-500">관리</th></tr>
+                                    <tr class="border-b bg-slate-50"><th class="py-2 text-slate-500">회사명</th><th class="py-2 text-slate-500">현재 가치 기준</th><th class="py-2 text-slate-500">관리</th></tr>
                                 </thead>
                                 <tbody id="company-admin-tbody" class="divide-y text-slate-600"></tbody>
                             </table>
@@ -334,14 +334,14 @@
         const defaultMarketState = {
             day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
-                { id: 1, name: "계산 잘하는 은행", price: 100, shares: 100, history: [100] }, 
-                { id: 2, name: "태무산 신용평가회사", price: 100, shares: 100, history: [100] },
-                { id: 3, name: "AI 태블릿 관리 업체", price: 100, shares: 100, history: [100] },
-                { id: 4, name: "지우개 칠판 청소", price: 100, shares: 100, history: [100] },
-                { id: 5, name: "말랑카우 우유", price: 100, shares: 100, history: [100] },
-                { id: 6, name: "쫄병 인력사무소", price: 100, shares: 100, history: [100] },
-                { id: 7, name: "신데렐라 청소회사", price: 100, shares: 100, history: [100] },
-                { id: 8, name: "기름나는 마트", price: 100, shares: 100, history: [100] }
+                { id: 1, name: "계산 잘하는 은행", price: 100, history: [100] }, 
+                { id: 2, name: "태무산 신용평가회사", price: 100, history: [100] },
+                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100] },
+                { id: 4, name: "지우개 칠판 청소", price: 100, history: [100] },
+                { id: 5, name: "말랑카우 우유", price: 100, history: [100] },
+                { id: 6, name: "쫄병 인력사무소", price: 100, history: [100] },
+                { id: 7, name: "신데렐라 청소회사", price: 100, history: [100] },
+                { id: 8, name: "기름나는 마트", price: 100, history: [100] }
             ],
             publicNews: [], macroNewsText: "시장이 평온하게 시작되었습니다.",
             govAnnouncements: [],
@@ -382,7 +382,6 @@
             if (data) {
                 window.state = data;
                 if(!window.state.companies) window.state.companies = [];
-                window.state.companies.forEach(c => { if(!c.shares) c.shares = 100; });
                 if(!window.state.publicNews) window.state.publicNews = [];
                 if(!window.state.govAnnouncements) window.state.govAnnouncements = [];
                 if(!window.state.users) window.state.users = [];
@@ -530,44 +529,38 @@
             }
         }
 
-        // 📝 [개선] 버튼 클릭 시 프로그램 내부에서 직접 주식 수를 자동 계산하고 기록하는 함수
         window.addInvestmentByTeacher = function() {
             const userId = document.getElementById('investor-select').value;
             const companyId = parseInt(document.getElementById('investment-company-select').value);
             const totalInvested = parseInt(document.getElementById('invest-amount-input').value);
 
-            if (!userId || isNaN(companyId) || isNaN(totalInvested) || totalInvested < 0) {
-                return alert("투자한 금액을 바르게 입력해주세요.");
+            if (!userId || isNaN(companyId) || isNaN(totalInvested) || totalInvested <= 0) {
+                return alert("투자 원금을 바르게 입력해주세요.");
             }
 
             const user = window.state.users.find(u => u.id === userId);
             const company = window.state.companies.find(c => c.id === companyId);
             if (!user || !company) return alert("학생 또는 회사 정보를 찾을 수 없습니다.");
 
-            // 💡 현재 주가를 가져와서 프로그램 내부에서 스스로 주식수 구하기 (소수점 버림)
-            const sharesCount = company.price > 0 ? Math.floor(totalInvested / company.price) : 0;
-
-            if (sharesCount <= 0) {
-                return alert("투자한 금액이 너무 적어서 주식을 1주도 살 수 없습니다!");
-            }
+            const addedShares = totalInvested / company.price;
 
             if (!window.state.investments) window.state.investments = [];
 
             const existIdx = window.state.investments.findIndex(inv => inv.userId === userId && inv.companyId === companyId);
             
             if (existIdx > -1) {
-                if (confirm(`${user.name} 학생은 이미 이 회사 주식을 가지고 있습니다.\n\n[확인]을 누르면 기존 주식에 숫자를 더하고,\n[취소]를 누르면 새 기록으로 덮어씁니다.`)) {
+                if (confirm(`${user.name} 학생은 이미 이 회사에 투자한 장부가 있습니다.\n\n[확인]을 누르면 기존 투자 원금에 이 금액을 더하고,\n[취소]를 누르면 새 투자 금액으로 아예 덮어씁니다.`)) {
                     window.state.investments[existIdx].totalInvested += totalInvested;
-                    window.state.investments[existIdx].sharesCount += sharesCount;
+                    window.state.investments[existIdx].sharesCount += addedShares;
                 } else {
-                    window.state.investments[existIdx] = { userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount };
+                    window.state.investments[existIdx] = { userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount: addedShares };
                 }
             } else {
-                window.state.investments.push({ userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount });
+                window.state.investments.push({ userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount: addedShares });
             }
 
             saveState();
-            alert(`✅ 주식 장부 등록 완료: ${user.name} -> ${company.name} [금액: ${totalInvested}달 / 내부 자동 계산된 주식: ${sharesCount}주] 장부에 적었습니다.`);
+            alert(`✅ 투자금 기록 완료: ${user.name} -> ${company.name} [원금 ${totalInvested}달 추가] 장부에 입력했습니다.`);
             document.getElementById('invest-amount-input').value = '';
         }
 
@@ -576,7 +569,7 @@
             if (!board) return;
 
             if (!window.state.investments || window.state.investments.length === 0) {
-                board.innerHTML = `<div class="col-span-full p-8 text-center text-slate-300 text-sm font-medium bg-slate-50 rounded-xl border border-dashed">장부에 기록된 주식 투자 현황이 없습니다.</div>`;
+                board.innerHTML = `<div class="col-span-full p-8 text-center text-slate-300 text-sm font-medium bg-slate-50 rounded-xl border border-dashed">장부에 기록된 투자금 현황이 없습니다.</div>`;
                 return;
             }
 
@@ -600,7 +593,7 @@
                     const currentPrice = currentComp ? currentComp.price : 0;
                     const compDisplay = currentComp ? window.escapeHTML(currentComp.name) : `❌ 회사 사라짐(${window.escapeHTML(inv.companyName)})`;
                     
-                    const evaluation = inv.sharesCount * currentPrice; 
+                    const evaluation = Math.round(inv.sharesCount * currentPrice); 
                     const profitLoss = evaluation - inv.totalInvested; 
                     
                     userTotalInvest += inv.totalInvested;
@@ -612,7 +605,7 @@
 
                     rowsHtml += `
                         <tr class="border-b text-xs hover:bg-white transition text-center ${!currentComp ? 'bg-red-50/50' : ''}">
-                            <td class="py-2 text-left pl-2 font-medium">${compDisplay} <span class="text-[10px] text-slate-400 font-normal">(${inv.sharesCount}주)</span></td>
+                            <td class="py-2 text-left pl-2 font-medium">${compDisplay}</td>
                             <td class="py-2 text-right font-mono">${inv.totalInvested.toLocaleString()}달</td>
                             <td class="py-2 text-right font-mono text-indigo-600 font-semibold">${evaluation.toLocaleString()}달</td>
                             <td class="py-2 text-right font-mono ${plColor}">${plSign}${profitLoss.toLocaleString()}달</td>
@@ -636,7 +629,7 @@
                                 <thead>
                                     <tr class="text-[10px] text-slate-400 border-b text-center font-bold">
                                         <th class="py-1 text-left pl-2">회사 이름</th>
-                                        <th class="py-1 text-right">투자 금액</th>
+                                        <th class="py-1 text-right">투자 원금</th>
                                         <th class="py-1 text-right">현재 가치</th>
                                         <th class="py-1 text-right">이익/손해</th>
                                         ${isManager ? `<th class="py-1 w-6">🔧</th>` : ''}
@@ -649,7 +642,7 @@
                             <span>계좌 합계</span>
                             <div class="flex gap-3 font-mono">
                                 <span>원금: ${userTotalInvest.toLocaleString()}달</span>
-                                <span class="text-indigo-700">현재가치: ${userTotalEval.toLocaleString()}달</span>
+                                <span class="text-indigo-700">평가액: ${userTotalEval.toLocaleString()}달</span>
                             </div>
                         </div>
                     </div>
@@ -659,7 +652,7 @@
         }
 
         window.deleteInvestment = function(userId, companyId) {
-            if (!confirm("이 주식 기록을 장부에서 지우시겠습니까?")) return;
+            if (!confirm("이 투자 기록을 장부에서 지우시겠습니까?")) return;
             if (window.state.investments) {
                 window.state.investments = window.state.investments.filter(inv => !(inv.userId === userId && inv.companyId === companyId));
                 saveState();
@@ -713,6 +706,7 @@
             else if (selectedPersona === 'gov_comment') ta.placeholder = `공무원으로서 [${targetName}] 회사에 대한 평가를 한 줄로 남겨주세요.`;
         }
 
+        // 🎯 [피드백 반영] 전송 완료 멘트를 중립적이고 평범한 어조로 수정
         window.submitInterview = function() {
             if (window.currentUser.role !== 'teacher') {
                 const myCount = Object.values(window.interviews).filter(i => i.userId === window.currentUser.id).length;
@@ -745,7 +739,7 @@
             };
 
             push(interviewsRef, payload).then(() => {
-                alert("선생님(본부)에게 제보가 전송되었습니다.");
+                alert("의견이 정상적으로 접수되었습니다."); // ◀ 통제 느낌을 지운 평범한 안내 멘트
                 document.getElementById('interview-text').value = '';
                 if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
             });
@@ -769,7 +763,7 @@
                 return `${statusLabel} ${roleLabel} ${i.compName}: ${i.text}`;
             }).join('\n');
             
-            const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재주가:${c.price}달, 발행주식수:${c.shares || 100}주)`).join('\n');
+            const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
             const teacherSecretKey = localStorage.getItem('my_secret_gemini_key');
 
             if (!teacherSecretKey) {
@@ -779,7 +773,7 @@
             }
 
             try {
-                const prompt = `당신은 초등학교 학급 가상 국가('보름달국')의 경제 주식 시뮬레이터를 돕는 교육용 경제 AI 전문가입니다. 아래 정보를 바탕으로 다음 날의 주가 변동과 기사를 재미있게 만드세요.
+                const prompt = `당신은 초등학교 학급 가상 국가('보름달국')의 경제 주식 시뮬레이터를 돕는 교육용 경제 AI 전문가입니다. 아래 정보를 바탕으로 다음 날의 자산 가치 변동과 기사를 재미있게 만드세요.
 
 [현재 국가 상태]
 - 기준 금리: ${window.state.baseRate}%
@@ -790,10 +784,10 @@ ${newsString || "없음"}
 ${companiesString}
 
 [작성 약속 가이드라인]
-1. 주가 변동 (changes): 제보 내용과 전체 상황을 고려하여 각 회사 주가의 등락률(pct, 소수점 1자리)을 정하고, 그 이유(reason)를 적어주세요. 주식수가 너무 많으면 가치가 떨어질 수 있다는 경제 원리도 반영하세요.
+1. 가치 변동 (changes): 제보 내용과 전체 상황을 고려하여 각 회사 가치의 등락률(pct, 소수점 1자리)을 정하고 그 이유(reason)를 적어주세요. 투자 금액의 쏠림 현상이나 기업 실적에 근거하여 가치를 조율하세요.
 2. 경제 뉴스 (news): 학생들이 다음 주식 투자를 추리할 수 있게 3~4개의 뉴스를 만들어 주세요.
    ★[매우 중요] 초등학교 6학년 학생들이 쉽게 읽고 이해할 수 있도록 친근하고 쉬운 어휘를 사용하세요. 어려운 금융 전문 용어는 피하거나 알기 쉽게 풀어서 설명하세요!
-   ★[분량 및 디테일] 각 뉴스는 단순 요약이 아니라 최소 3~5문장 이상으로 길고 풍부하게 작성하세요. 구체적인 현장 묘사, 가상의 전문가 인터뷰, 시장 사람들의 반응을 듬뿍 넣어 생동감 넘치게 쓰세요. 단, "주가가 무조건 오른다/내린다"를 직접 말하지 말고 모호하고 은유적인 표현(예: "공장에 불이 켜져 밤새 연기가 피어오른다", "창고에 먼지만 쌓이고 있다")을 써서 아이들이 알아맞히게 하세요.
+   ★[분량 및 디테일] 각 뉴스는 단순 요약이 아니라 최소 3~5문장 이상으로 길고 풍부하게 작성하세요. 구체적인 현장 묘사, 가상의 전문가 인터뷰, 시장 사람들의 반응을 듬뿍 넣어 생동감 넘치게 쓰세요. 단, "가치가 무조건 오른다/내린다"를 직접 말하지 말고 모호하고 은유적인 표현(예: "공장에 불이 켜져 밤새 연기가 피어오른다", "창고에 먼지만 쌓이고 있다")을 써서 아이들이 알아맞히게 하세요.
 3. 예금 금리 추천: 기준금리 기반으로 정하고 이유를 쉽고 간단히 설명하세요.
 
 [출력 형식] (아래 구조의 순수 JSON만 마크다운 기호 없이 출력)
@@ -824,10 +818,10 @@ ${companiesString}
         function generateRandomPreview() {
             let changes = window.state.companies.map(c => {
                 const move = (Math.random() * 12 - 6).toFixed(1);
-                return { id: c.id, pct: parseFloat(move), reason: "반 친구들의 수급 상황과 교실 시장의 보이지 않는 손에 의해 주가가 변동했습니다." };
+                return { id: c.id, pct: parseFloat(move), reason: "반 친구들의 투자 자금 흐름과 교실 시장의 보이지 않는 손에 의해 가치가 변동했습니다." };
             });
             window.pendingAIResult = {
-                news: [{title: "보름달국 주식 시장, 알 수 없는 안개 속으로?", content: "요즘 우리 반 주식 시장의 분위기가 예사롭지 않습니다. 친구들 사이에서 여러 회사에 대한 다양한 소문이 퍼지면서 긴장감이 돌고 있기 때문입니다. 한 투자 전문 친구는 '지금은 어떤 회사가 크게 성장할지 섣불리 맞히기 어려운 흥미진진한 타이밍'이라고 말했습니다. 과연 내일은 어떤 회사가 웃게 될지 교실의 관심이 한곳으로 모이고 있습니다."}],
+                news: [{title: "보름달국 투자 시장, 알 수 없는 안개 속으로?", content: "요즘 우리 반 투자 시장의 분위기가 예사롭지 않습니다. 친구들 사이에서 여러 회사에 대한 다양한 소문이 퍼지면서 긴장감이 돌고 있기 때문입니다. 한 투자 전문 친구는 '지금은 어떤 회사가 크게 성장할지 섣불리 맞히기 어려운 흥미진진한 타이밍'이라고 말했습니다. 과연 내일은 어떤 회사가 웃게 될지 교실의 관심이 한곳으로 모이고 있습니다."}],
                 changes: changes,
                 suggestedDepositRate: window.state.baseRate + 0.5,
                 depositRateReasoning: "기준 금리를 바탕으로 계산한 안전한 은행 이자율입니다."
@@ -836,7 +830,7 @@ ${companiesString}
         }
 
         function showPreviewModal(result) {
-            let html = `<div><h3 class="font-bold text-lg mb-3 flex items-center gap-2">📈 예상 주가 변동 내역</h3><div class="grid gap-3">`;
+            let html = `<div><h3 class="font-bold text-lg mb-3 flex items-center gap-2">📈 예상 가치 변동 내역</h3><div class="grid gap-3">`;
             result.changes.forEach(c => {
                 const comp = window.state.companies.find(comp => comp.id === c.id);
                 if(comp) {
@@ -845,7 +839,7 @@ ${companiesString}
                     const sign = c.pct > 0 ? '▲' : (c.pct < 0 ? '▼' : '-');
                     html += `<div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                                 <div class="flex justify-between items-center mb-1">
-                                    <span class="font-bold text-slate-800">${window.escapeHTML(comp.name)} <span class="text-xs text-slate-400 font-normal ml-1">(주식:${comp.shares||100}주)</span></span>
+                                    <span class="font-bold text-slate-800">${window.escapeHTML(comp.name)}</span>
                                     <span class="font-black ${diffColor}">${comp.price.toLocaleString()}달 ➔ ${newPrice.toLocaleString()}달 (${sign}${Math.abs(c.pct)}%)</span>
                                 </div>
                                 <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>원인 분석:</b> ${window.escapeHTML(c.reason)}</p>
@@ -927,7 +921,6 @@ ${companiesString}
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-slate-500">${window.escapeHTML(c.name)}</span>
-                            <span class="text-[10px] text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">총 주식: ${c.shares || 100}주</span>
                         </div>
                         <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}달</div>
                         <div class="text-[12px] font-bold ${color} mt-1">${sign} ${Math.abs(diff).toLocaleString()}달 (${sign}${Math.abs(pct)}%)</div>
@@ -1141,7 +1134,7 @@ ${companiesString}
             const name = document.getElementById('new-company-name').value.trim();
             const price = parseInt(document.getElementById('new-company-price').value);
             if(!name || isNaN(price)) return alert("정확하게 입력해 주세요.");
-            window.state.companies.push({ id: Date.now(), name, price, shares: 100, history: Array(window.state.day).fill(price) });
+            window.state.companies.push({ id: Date.now(), name, price, history: Array(window.state.day).fill(price) });
             saveState();
             document.getElementById('new-company-name').value = ''; document.getElementById('new-company-price').value = '';
         }
@@ -1150,7 +1143,7 @@ ${companiesString}
             const comp = window.state.companies.find(c => c.id === id);
             const newName = prompt("회사 이름:", comp.name);
             if(newName === null) return;
-            const newPrice = prompt("현재 주가:", comp.price);
+            const newPrice = prompt("현재 주가 기준선:", comp.price);
             if(newPrice === null) return;
             if (newName.trim() !== "" && !isNaN(newPrice)) {
                 comp.name = newName.trim(); comp.price = parseInt(newPrice); comp.history[comp.history.length - 1] = comp.price; 
@@ -1160,7 +1153,7 @@ ${companiesString}
 
         window.deleteCompany = function(id) {
             if (window.state.companies.length <= 1) return alert("최소 1개의 회사는 남아있어야 합니다.");
-            if (confirm("이 회사를 주식 시장에서 없애시겠습니까(상장폐지)? 친구들이 가지고 있는 이 회사 주식 기록도 함께 지워집니다.")) { 
+            if (confirm("이 회사를 없애시겠습니까? 친구들이 기존에 해두었던 이 회사 투자금 장부도 함께 파기됩니다.")) { 
                 window.state.companies = window.state.companies.filter(c => c.id !== id); 
                 saveState(); 
             }
@@ -1193,7 +1186,7 @@ ${companiesString}
             document.getElementById('company-admin-tbody').innerHTML = window.state.companies.map(c => `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="py-2">${window.escapeHTML(c.name)}</td>
-                    <td class="py-2 font-bold text-indigo-600">${c.price.toLocaleString()}달 <span class="text-[10px] text-slate-400 font-normal">(${c.shares || 100}주)</span></td>
+                    <td class="py-2 font-bold text-indigo-600">${c.price.toLocaleString()}달 기준</td>
                     <td class="py-2">
                         <button onclick="editCompany(${c.id})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px]">수정</button>
                         <button onclick="deleteCompany(${c.id})" class="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] ml-1">삭제</button>
