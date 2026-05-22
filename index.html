@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v10.0 (주식 거래소 & 뉴스 피드)</title>
+    <title>우리 반 주식 시장 v10.1 (주식 거래소 & 뉴스 피드)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -132,23 +132,19 @@
 
                 <div class="bg-emerald-50 p-5 rounded-xl shadow-sm border-2 border-emerald-200 mb-8">
                     <h3 class="font-black text-emerald-800 mb-1 flex items-center gap-2">📊 선생님 전용 주식 직접 기록 데스크</h3>
-                    <p class="text-xs text-emerald-600 mb-4">학생들의 오프라인 주식 거래 내용을 입력하면, <b>살 수 있는 주식 수가 자동으로 계산</b>되어 장부에 기록됩니다.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-emerald-100">
+                    <p class="text-xs text-emerald-600 mb-4">학생들의 오프라인 주식 거래 내용을 입력하면, <b>살 수 있는 주식 수가 프로그램 내부에서 자동으로 계산</b>되어 장부에 기록됩니다.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-emerald-100">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">👤 학생(투자자) 선택</label>
                             <select id="investor-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">🏢 회사 주식 선택</label>
-                            <select id="investment-company-select" onchange="calculateShares()" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
+                            <select id="investment-company-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">💰 투자한 금액 (달)</label>
-                            <input type="number" id="invest-amount-input" oninput="calculateShares()" placeholder="금액 입력" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 mb-1">📊 살 수 있는 주식 수 (자동 계산)</label>
-                            <input type="number" id="invest-shares-input" placeholder="자동 계산됨" readonly class="w-full border p-2 rounded-lg text-sm bg-slate-100 text-slate-500 font-bold outline-none">
+                            <input type="number" id="invest-amount-input" placeholder="금액 입력" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
                         </div>
                     </div>
                     <button onclick="addInvestmentByTeacher()" class="mt-3 w-full bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm">장부에 등록하기 (기존 주식 수에 더해집니다)</button>
@@ -532,47 +528,28 @@
             if (companySelect && window.state.companies) {
                 companySelect.innerHTML = window.state.companies.map(c => `<option value="${c.id}">${window.escapeHTML(c.name)} (현재가: ${c.price}달)</option>`).join('');
             }
-            calculateShares(); // 초기 계산값 세팅
         }
 
-        // ✨ [개선] 투자 금액을 보고 주식 수를 자동으로 계산해주는 함수
-        window.calculateShares = function() {
-            const companyId = parseInt(document.getElementById('investment-company-select').value);
-            const amount = parseInt(document.getElementById('invest-amount-input').value) || 0;
-            const sharesInput = document.getElementById('invest-shares-input');
-            
-            if (!companyId || amount <= 0) {
-                sharesInput.value = 0;
-                return;
-            }
-
-            const company = window.state.companies.find(c => c.id === companyId);
-            if (company && company.price > 0) {
-                // 투자 금액을 주가로 나누어 정수 주식 수 계산 (소수점 버림)
-                const calculatedShares = Math.floor(amount / company.price);
-                sharesInput.value = calculatedShares;
-            } else {
-                sharesInput.value = 0;
-            }
-        }
-
+        // 📝 [개선] 버튼 클릭 시 프로그램 내부에서 직접 주식 수를 자동 계산하고 기록하는 함수
         window.addInvestmentByTeacher = function() {
             const userId = document.getElementById('investor-select').value;
             const companyId = parseInt(document.getElementById('investment-company-select').value);
             const totalInvested = parseInt(document.getElementById('invest-amount-input').value);
-            // 자동 계산된 주식 수 가져오기
-            const sharesCount = parseInt(document.getElementById('invest-shares-input').value);
 
             if (!userId || isNaN(companyId) || isNaN(totalInvested) || totalInvested < 0) {
                 return alert("투자한 금액을 바르게 입력해주세요.");
-            }
-            if (sharesCount <= 0) {
-                return alert("투자한 금액이 너무 적어서 주식을 1주도 살 수 없습니다!");
             }
 
             const user = window.state.users.find(u => u.id === userId);
             const company = window.state.companies.find(c => c.id === companyId);
             if (!user || !company) return alert("학생 또는 회사 정보를 찾을 수 없습니다.");
+
+            // 💡 현재 주가를 가져와서 프로그램 내부에서 스스로 주식수 구하기 (소수점 버림)
+            const sharesCount = company.price > 0 ? Math.floor(totalInvested / company.price) : 0;
+
+            if (sharesCount <= 0) {
+                return alert("투자한 금액이 너무 적어서 주식을 1주도 살 수 없습니다!");
+            }
 
             if (!window.state.investments) window.state.investments = [];
 
@@ -590,9 +567,8 @@
             }
 
             saveState();
-            alert(`✅ 주식 장부 등록 완료: ${user.name} -> ${company.name} [${sharesCount}주] 장부에 적었습니다.`);
+            alert(`✅ 주식 장부 등록 완료: ${user.name} -> ${company.name} [금액: ${totalInvested}달 / 내부 자동 계산된 주식: ${sharesCount}주] 장부에 적었습니다.`);
             document.getElementById('invest-amount-input').value = '';
-            document.getElementById('invest-shares-input').value = 0;
         }
 
         function renderInvestmentDashboard() {
@@ -775,7 +751,6 @@
             });
         }
 
-        // ✨ [개선] 초등학교 6학년 수준의 풍부한 어휘 지침 추가
         window.processNextDay = async function() {
             window.state.baseRate = parseFloat(document.getElementById('base-rate-input').value) || 2.0;
             window.state.macroContext = document.getElementById('macro-context-input').value.trim();
@@ -1108,7 +1083,7 @@ ${companiesString}
             });
             if (addedCount > 0) {
                 saveState(); document.getElementById('bulk-user-input').value = '';
-                alert(`총 ${addedCount}명의 학생 계정이 만들어졌습니다! (건너뛴 중복 아이디: ${skippedCount}명)`);
+                alert(`총 ${addedCount}명의 학생 계정이 만들어졌습니다! (건너뀐 중복 아이디: ${skippedCount}명)`);
             }
         }
 
