@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v10.4</title>
+    <title>우리 반 주식 시장 v10.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -298,20 +298,6 @@
         </div>
     </div>
 
-    <div id="news-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border-4 border-indigo-600">
-            <div class="bg-indigo-600 text-white p-5 flex justify-between items-center">
-                <h2 id="news-modal-title" class="text-xl font-black flex items-center gap-2">📰 뉴스 제목</h2>
-                <button onclick="closeNewsModal()" class="text-white hover:text-indigo-200 text-2xl font-bold p-1 leading-none">&times;</button>
-            </div>
-            <div id="news-modal-content" class="p-8 overflow-y-auto flex-1 text-base text-slate-700 bg-slate-50 leading-relaxed font-medium">
-                </div>
-            <div class="p-4 border-t bg-white flex justify-end">
-                <button onclick="closeNewsModal()" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-md">닫기</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
@@ -320,13 +306,13 @@
         // =========================================================================
         // 🚨 Firebase 설정을 여기에 붙여넣으세요! 🚨
         const firebaseConfig = {
-            apiKey: "AIzaSyAR0g6Yl--aK1dSQCQf2svAbiW4VLDFnRQ",
-            authDomain: "gen-lang-client-0718553311.firebaseapp.com",
-            databaseURL: "https://gen-lang-client-0718553311-default-rtdb.firebaseio.com",
-            projectId: "gen-lang-client-0718553311",
-            storageBucket: "gen-lang-client-0718553311.firebasestorage.app",
-            messagingSenderId: "262295237425",
-            appId: "1:262295237425:web:01eed49e80797922883610"
+            apiKey: "여기에_API_KEY_입력",
+            authDomain: "여기에_AUTH_DOMAIN_입력",
+            databaseURL: "여기에_DATABASE_URL_입력",
+            projectId: "여기에_PROJECT_ID_입력",
+            storageBucket: "여기에_STORAGE_BUCKET_입력",
+            messagingSenderId: "여기에_SENDER_ID_입력",
+            appId: "여기에_APP_ID_입력"
         };
         // =========================================================================
 
@@ -720,6 +706,7 @@
             else if (selectedPersona === 'gov_comment') ta.placeholder = `공무원으로서 [${targetName}] 회사에 대한 평가를 한 줄로 남겨주세요.`;
         }
 
+        // 🎯 [피드백 반영] 전송 완료 멘트를 중립적이고 평범한 어조로 수정
         window.submitInterview = function() {
             if (window.currentUser.role !== 'teacher') {
                 const myCount = Object.values(window.interviews).filter(i => i.userId === window.currentUser.id).length;
@@ -752,7 +739,7 @@
             };
 
             push(interviewsRef, payload).then(() => {
-                alert("의견이 정상적으로 접수되었습니다.");
+                alert("의견이 정상적으로 접수되었습니다."); // ◀ 통제 느낌을 지운 평범한 안내 멘트
                 document.getElementById('interview-text').value = '';
                 if(document.getElementById('is-announcement')) document.getElementById('is-announcement').checked = false;
             });
@@ -942,7 +929,6 @@ ${companiesString}
             window.updateInterviewPlaceholder(); 
         }
 
-        // 🎯 [피드백 반영] 뉴스 리스트 렌더링 방식 수정 (모달창 트리거)
         function renderNews() {
             const feed = document.getElementById('public-news-feed');
             if(window.state.publicNews.length === 0) {
@@ -951,32 +937,29 @@ ${companiesString}
             }
             feed.innerHTML = window.state.publicNews.map((n, idx) => {
                 const isObject = typeof n === 'object';
-                const safeTitle = isObject ? `[${n.day}일차] ${window.escapeHTML(n.title)}` : window.escapeHTML(n);
+                const safeTitle = isObject ? `[${n.day}일차 뉴스] ${window.escapeHTML(n.title)}` : window.escapeHTML(n);
+                const safeContent = isObject ? window.escapeHTML(n.content).replace(/\n/g, '<br>') : window.escapeHTML(n);
                 return `
-                <div class="p-3.5 bg-slate-50 rounded-xl border-l-4 border-indigo-500 cursor-pointer hover:bg-indigo-50 hover:border-indigo-600 transition shadow-sm flex justify-between items-center group" onclick="openNewsModal(${idx})">
-                    <span class="font-bold text-slate-700 group-hover:text-indigo-900 truncate pr-2">📰 ${safeTitle}</span>
-                    <span class="text-[11px] text-indigo-500 font-semibold shrink-0 bg-white px-2 py-0.5 rounded border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition">자세히 보기 ➔</span>
+                <div class="p-4 bg-slate-50 rounded-lg border-l-4 border-indigo-500 cursor-pointer hover:bg-slate-100 transition shadow-sm" onclick="toggleNews(${idx})">
+                    <div class="flex justify-between items-center text-sm font-bold text-indigo-800">
+                        <span>📰 ${safeTitle}</span>
+                        <span id="news-icon-${idx}" class="text-xs text-slate-400 font-normal">▼ 펼치기</span>
+                    </div>
+                    <div id="news-full-${idx}" class="hidden mt-3 pt-3 border-t border-slate-200 text-sm text-slate-600 leading-loose">
+                        ${safeContent}
+                    </div>
                 </div>`;
             }).join('');
         }
 
-        // 🎯 [새로 추가됨] 뉴스 모달 제어 함수
-        window.openNewsModal = function(idx) {
-            const n = window.state.publicNews[idx];
-            if (!n) return;
-
-            const isObject = typeof n === 'object';
-            const title = isObject ? `[${n.day}일차 경제 뉴스] ${n.title}` : "보름달국 긴급 소식";
-            const content = isObject ? n.content : n;
-
-            document.getElementById('news-modal-title').innerText = title;
-            // 텍스트 줄바꿈을 <br> 태그로 변환하여 가독성 있게 삽입
-            document.getElementById('news-modal-content').innerHTML = window.escapeHTML(content).replace(/\n/g, '<br>');
-            document.getElementById('news-modal').classList.remove('hidden');
-        }
-
-        window.closeNewsModal = function() {
-            document.getElementById('news-modal').classList.add('hidden');
+        window.toggleNews = function(idx) {
+            const fullContent = document.getElementById(`news-full-${idx}`);
+            const icon = document.getElementById(`news-icon-${idx}`);
+            if (fullContent && fullContent.classList.contains('hidden')) {
+                fullContent.classList.remove('hidden'); icon.innerText = '▲ 접기';
+            } else if (fullContent) {
+                fullContent.classList.add('hidden'); icon.innerText = '▼ 펼치기';
+            }
         }
 
         function updateChart() {
