@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v12.4</title>
+    <title>우리 반 주식 시장 v12.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -177,7 +177,7 @@
 
                     <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
                         <h3 class="font-bold text-rose-700 mb-2">🚀 오늘 보름달국 시장 마감</h3>
-                        <p class="text-xs text-slate-500 mb-4">마감을 누르면 AI가 경제 상황과 제보들을 종합 분석하여 내일 주가와 5문장 이상의 상세 힌트 뉴스를 만듭니다.</p>
+                        <p class="text-xs text-slate-500 mb-4">마감을 누르면 AI가 경제 상황과 제보들을 종합 분석하여 내일 주가와 4개 이상의 힌트 뉴스를 만듭니다.</p>
                         <button id="process-day-btn" onclick="processNextDay()" class="w-full py-6 bg-rose-600 text-white rounded-xl font-black text-xl hover:bg-rose-700 transition shadow-lg transform hover:scale-[1.02]">오늘 장 마감 및 AI 분석하기</button>
                     </div>
                 </div>
@@ -293,7 +293,7 @@
         </div>
     </div>
 
-    <!-- 뉴스 상세 모달 -->
+    <!-- 뉴스 상세 모달 (해당 뉴스에 현실 연계가 있을 때만 현실 설명 코너 표시) -->
     <div id="news-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border-4 border-indigo-600">
             <div class="bg-indigo-600 text-white p-5 flex justify-between items-center">
@@ -304,7 +304,7 @@
             <div class="p-6 overflow-y-auto flex-1 text-slate-700 bg-slate-50 space-y-4">
                 <!-- 학급 뉴스 본문 -->
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div id="news-modal-content" class="text-base text-slate-700 leading-relaxed font-medium space-y-2"></div>
+                    <div id="news-modal-content" class="text-base text-slate-700 leading-relaxed font-medium"></div>
                 </div>
 
                 <!-- 현실 경제가 연계된 뉴스에만 동적으로 노출되는 코너 -->
@@ -697,17 +697,15 @@ ${companiesString}
 [작성 약속 및 가이드라인]
 1. 주가 변동 계산 (changes):
    - 목록의 모든 회사(빠짐없이 전부)에 대해 등락률(pct, 소수점 1자리)과 명확한 원인(reason)을 작성하세요.
-   - ★작성한 이유(reason)는 내일 모든 학생들이 보게 됩니다. 초등학생 눈높이에 맞추어 왜 가격이 올랐거나 내렸는지 1~2문장으로 알기 쉽게 작성하세요.
+   - ★[매우 중요]: 작성한 이유(reason)는 내일 모든 학생들이 보게 됩니다. 초등학생 눈높이에 맞추어 왜 가격이 올랐거나 내렸는지 1~2문장으로 알기 쉽게 작성하세요.
    - 모든 회사를 억지로 현실 경제와 연결할 필요는 없습니다. 현실의 거시경제 흐름(금리, 유가, 물가, AI 기술 등)과 교실 내 학생 제보, 그리고 AI의 자유로운 교실 이야기 상상력을 자연스럽게 섞어서 구성하세요.
    - ★[과거 뉴스 및 복선 반영 필수]: 이전에 발행되었던 뉴스나 상황(예: 원자재 부족, 날씨 변화, 기술 개발 착수 등)이 실제로 시간이 흐르며 현실화되어 이번 주가 변동에 영향을 미치도록 인과관계를 자연스럽게 연결하세요.
    - 제보가 없는 회사라도 전체 경제 환경(금리, 교실 트렌드, 날씨, 다른 회사의 나비효과 등)을 바탕으로 흥미로운 이유로 주가를 변동시키세요.
    - [선생님 메모]가 있다면 최우선 반영하되 본문에는 비밀 메모라는 언급을 절대 하지 마세요.
 
 2. 내일 아침 발행할 경제 뉴스 피드 (news) - ★반드시 최소 4개 이상(4~5개) 작성:
-   - ★[초등 6학년 맞춤]: 아이들이 쉽고 흥미진진하게 읽을 수 있는 친근하고 풍부한 어휘로 작성하세요.
-   - ★[기사 분량 절대 준수]: 각 기사는 **반드시 최소 5문장 이상(5~7문장 수준)**으로 매우 상세하고 풍성하게 작성하세요. 2~3문장의 짧은 단신 기사는 절대 금지합니다.
-   - 기사 내용에는 (1) 구체적인 사건 배경과 일어난 일, (2) 교실과 시장의 생생한 분위기, (3) 학생/전문가/관계자의 반응 및 인터뷰 코멘트, (4) 앞으로 시장에 미칠 영향과 힌트 등이 모두 포함되어야 합니다.
-   - ★[현실 경제 연계 코너 (선택)]: 현실 경제 상황과 관련된 뉴스인 경우에만 "realWorldContext" 필드에 "실제 현실 세상에서는 무슨 일이 벌어지고 있는지"를 친절하게 설명하는 글(2~3문장)을 넣으세요. 순수 교실 이벤트나 일반 소문 뉴스인 경우에는 "realWorldContext"를 빈 문자열("")로 두세요.
+   - ★[초등 6학년 맞춤]: 아이들이 쉽고 흥미진진하게 읽을 수 있는 친근하고 풍부한 어휘(3~5문장 이상)로 작성하세요.
+   - ★[현실 경제 연계 코너 (선택)]: 현실 경제 상황과 관련된 뉴스인 경우에만 "realWorldContext" 필드에 "실제 현실 세상에서는 무슨 일이 벌어지고 있는지"를 친절하게 설명하는 글(2~3문장)을 넣으세요. 순수 교실 이벤트나 일반 소문 뉴스인 경우에는 "realWorldContext"를 null 또는 빈 문자열("")로 두세요.
    - [뉴스 구성 규칙]:
      ① **[결과 해설 뉴스 (1~2편)]**: 오늘 주가가 크게 오르거나 내린 회사의 배경 상황과, 과거 뉴스 떡밥이 어떻게 실현되었는지를 알려주는 뉴스.
      ② **[★미래 예측/전망용 힌트 뉴스 (2~3편 - 핵심!)]**: 아이들이 **다음 날 또는 향후 주가를 추리하고 예측할 수 있도록 전체 경제 상황, 새로운 유행의 조짐, 원자재 수급, 법안 발의 조짐, 계절 변화 등의 징후를 담은 뉴스**.
@@ -721,22 +719,22 @@ ${companiesString}
   "news": [
     {
       "title": "뉴스 제목 1",
-      "content": "최소 5문장 이상의 상세하고 긴 기사 본문 (사건 배경, 시장 반응, 인터뷰, 전망 힌트 포함)",
+      "content": "기사 내용 1 (6학년 눈높이, 3~5문장)",
       "realWorldContext": "현실 세계와 관련된 뉴스일 때만 작성 (아니면 빈 문자열 '')"
     },
     {
       "title": "뉴스 제목 2",
-      "content": "최소 5문장 이상의 상세하고 긴 기사 본문",
+      "content": "기사 내용 2 (6학년 눈높이, 3~5문장)",
       "realWorldContext": ""
     },
     {
       "title": "뉴스 제목 3",
-      "content": "최소 5문장 이상의 상세하고 긴 기사 본문",
+      "content": "기사 내용 3",
       "realWorldContext": ""
     },
     {
       "title": "뉴스 제목 4",
-      "content": "최소 5문장 이상의 상세하고 긴 기사 본문",
+      "content": "기사 내용 4",
       "realWorldContext": ""
     }
   ],
@@ -816,23 +814,23 @@ ${companiesString}
             window.pendingAIResult = {
                 news: [
                     {
-                        title: "보름달국 시장 탐색전 돌입, 투자자들의 신중한 눈치싸움", 
-                        content: "오늘 우리 반 주식 시장에서는 주요 기업들이 새로운 프로젝트를 준비하면서 긴장감이 맴돌았습니다. 여러 기업의 대표들은 최근 교실 내 소비 성향을 분석하며 신제품 출시 일정을 조율하고 있는 것으로 알려졌습니다. 한 투자 동아리 소속 친구는 '지금은 무리하게 투자하기보다는 각 회사의 활동 소식을 면밀히 관찰해야 할 때'라고 조언했습니다. 실제로 복도 게시판에는 기업들의 새로운 홍보 포스터가 하나둘 붙기 시작하며 치열한 경쟁을 예고하고 있습니다. 전문가들은 이번 주 후반부터 각 기업의 실적이 본격적으로 엇갈릴 것으로 전망하고 있습니다.",
-                        realWorldContext: "실제 현실에서도 기업들은 계절적 비수기나 정책 변화 시기에 신제품 출시를 조율하며 신중한 투자 기조를 유지합니다."
+                        title: "보름달국 투자 시장, 신중한 탐색전 이어져", 
+                        content: "오늘 우리 반 시장에서는 다양한 기업들이 새로운 활동을 준비하면서 긴장감이 감돌았습니다. 한편 최근 교실 내에서 환경 정리와 청결에 대한 관심이 부쩍 높아지고 있어 관련 활동이 늘어날 것으로 보입니다. 투자자 친구들은 시장의 흐름과 소문에 귀를 기울이며 신중한 태도를 보이고 있습니다.",
+                        realWorldContext: "실제 현실에서도 기업들이 계절적 비수기나 정책 변화 시기에 신제품 출시를 조율하며 신중한 투자 기조를 유지합니다."
                     },
                     {
-                        title: "다가오는 학급 대축제, 교실 내 소비 패턴에 부는 변화의 바람", 
-                        content: "학급 자치회에서 다음 주 예정된 깜짝 학급 이벤트를 본격적으로 논의하기 시작했다는 소식이 전해졌습니다. 이에 따라 학용품과 다과류를 중심으로 물품 수요가 크게 늘어날 것이라는 기대감이 시장 전반에 퍼지고 있습니다. 한 상점 관계자는 '행사 기간 동안 필요한 물량을 미리 확보하기 위해 거래처와 협의 중'이라고 분위기를 전했습니다. 소비자 친구들 역시 벌써부터 용돈을 아끼며 축제 기간 동안 쓸 자금을 모으는 움직임을 보이고 있습니다. 이번 이벤트가 어떤 회사의 매출을 크게 끌어올리는 기폭제가 될지 교실 안팎의 시선이 집중되고 있습니다.",
+                        title: "다가오는 학급 행사를 앞두고 소비 패턴 변화 조짐?", 
+                        content: "학급 임원회에서 새로운 교실 이벤트를 검토하고 있다는 소식이 전해지면서 학급 내 자금 흐름이 요동칠 조짐을 보이고 있습니다. 문구류와 간식류의 소비량이 평소보다 늘어날 수 있다는 관측이 나오는 가운데, 어떤 회사가 이 기회를 잡게 될지 주목됩니다.",
                         realWorldContext: ""
                     },
                     {
-                        title: "수업 시간 디지털 기기 활용 급증, 관리 및 보안 중요성 부각", 
-                        content: "최근 태블릿을 활용한 모둠별 협동 수업이 늘어나면서 기기 관리의 중요성이 그 어느 때보다 강조되고 있습니다. 수업 중 배터리 부족이나 앱 오류로 인해 불편을 겪는 사례가 발생하자 전문적인 유지보수 서비스에 대한 필요성이 제기되었습니다. 한 학생은 '기기가 항상 완충되어 있고 앱이 잘 작동하면 수업 집중도가 훨씬 높아진다'며 만족감을 드러냈습니다. 이에 따라 전자기기 점검과 보관함을 전문적으로 관리해 주는 서비스 기업들의 입지가 강화될 조짐을 보이고 있습니다. 업계 관계자들은 앞으로 스마트 교육 환경이 정착될수록 이 분야의 수요가 꾸준히 증가할 것으로 내다보고 있습니다.",
-                        realWorldContext: "현실 사회에서도 스마트 오피스와 AI 기기 보급이 확대됨에 따라 IT 유지보수 및 보안 서비스 산업이 핵심 미래 산업으로 급성장하고 있습니다."
+                        title: "디지털 기기 활용 증가, 새로운 서비스 수요 꿈틀", 
+                        content: "수업 시간 태블릿 및 전자기기 사용량이 증가함에 따라 기기 관리와 충전 지원의 중요성이 커지고 있습니다. 친구들 사이에서는 기기를 더 안전하고 편리하게 관리해 줄 전문 서비스에 대한 관심이 높아지고 있습니다.",
+                        realWorldContext: "현실 사회에서도 AI와 스마트 기기 보급이 늘어남에 따라 IT 유지보수 및 보안 서비스 산업이 급성장하고 있습니다."
                     },
                     {
-                        title: "중앙은행 예금 금리 동향 발표, 안전 자산 선호 심리 확산되나", 
-                        content: "보름달국 중앙은행이 현재의 기준 금리를 유지하겠다는 공식 입장을 밝히면서 투자자들의 자금 이동이 주목받고 있습니다. 안정적인 이자 수익을 노리는 친구들은 은행 예금 계좌로 눈을 돌리며 자금을 안전하게 묶어두려는 모습을 보이고 있습니다. 반면 고수익을 기대하는 공격적인 투자자들은 주가 조정을 틈타 유망 기업의 주식을 매수할 기회를 엿보고 있습니다. 한 경제 담당 학생은 '금리와 주가는 시소처럼 움직이기 때문에 시장 분위기를 잘 살펴야 한다'고 강조했습니다. 은행과 주식 시장 사이에서 반 친구들의 투자 나침반이 어느 방향을 가리킬지 관심이 모아집니다.",
+                        title: "중앙은행 이자율 정책과 시장 유동성의 향방은?", 
+                        content: "최근 보름달국 은행의 예금 금리 변동 추이에 많은 투자자들의 관심이 쏠리고 있습니다. 금리가 안정세를 유지하면서 친구들이 은행 예금과 주식 투자 사이에서 어떤 선택을 내릴지 귀추가 주목됩니다.",
                         realWorldContext: ""
                     }
                 ],
@@ -860,7 +858,7 @@ ${companiesString}
                              </div>`;
                 }
             });
-            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 경제 뉴스 피드 (총 ${result.news.length}편 - 최소 5문장)</h3><div class="space-y-3">`;
+            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 경제 뉴스 피드 (총 ${result.news.length}편)</h3><div class="space-y-3">`;
             result.news.forEach(n => {
                 const hasReal = n.realWorldContext ? `<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded ml-1">🌐 현실연계</span>` : '';
                 html += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -883,7 +881,7 @@ ${companiesString}
                 if (target) {
                     target.price = Math.round(target.price * (1 + (c.pct / 100)));
                     target.history.push(target.price);
-                    target.lastReason = c.reason || "시장 상황에 의해 변동했습니다.";
+                    target.lastReason = c.reason || "시장 상황에 의해 변동했습니다."; // 아이들에게 보여줄 원인 저장
                 }
             });
             
@@ -999,7 +997,7 @@ ${companiesString}
             const content = isObject ? n.content : n;
 
             document.getElementById('news-modal-title').innerText = title;
-            document.getElementById('news-modal-content').innerHTML = window.escapeHTML(content).replace(/\n/g, '<br><br>');
+            document.getElementById('news-modal-content').innerHTML = window.escapeHTML(content).replace(/\n/g, '<br>');
             
             // 현실 연계 내용이 있는 뉴스에만 해당 코너를 동적으로 표시
             const realNewsContainer = document.getElementById('real-news-container');
