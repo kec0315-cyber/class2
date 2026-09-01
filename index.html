@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v12.2</title>
+    <title>우리 반 주식 시장 v12.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -55,14 +55,17 @@
                 <!-- 왼쪽 주가 및 차트 영역 -->
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📈 우리 반 회사들의 주식 가격 (1달 기준)</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold flex items-center gap-2">📈 우리 반 회사 주식 시세판</h2>
+                            <span class="text-xs text-slate-400">당일 주가 변동 원인이 함께 표시됩니다</span>
+                        </div>
                         <div id="company-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                     </div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">📊 주가 변동 추이 차트</h2>
-                            <span class="text-xs text-slate-400 font-medium">회사별 일자별 가격 흐름</span>
+                            <span class="text-xs text-slate-400 font-medium">일자별 가치 변동 추이</span>
                         </div>
                         <canvas id="marketChart" height="150"></canvas>
                     </div>
@@ -158,7 +161,7 @@
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-indigo-600">🌐 전체 경제 상황/학급 이벤트 메모 (비워두면 AI가 재미있게 상상합니다)</label>
-                                <textarea id="macro-context-input" rows="2" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="예: 학급 이벤트, 법안 발의, 유행 변화 등 (비워두면 AI가 자동 생성)"></textarea>
+                                <textarea id="macro-context-input" rows="2" class="w-full border p-2 rounded-lg text-sm mt-1 focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="예: 학급 이벤트, 법안 발의, 특정 원자재 이슈 등 (비워두면 자동 생성)"></textarea>
                             </div>
 
                             <div class="pt-4 border-t border-slate-100">
@@ -290,7 +293,7 @@
         </div>
     </div>
 
-    <!-- 뉴스 상세 모달 -->
+    <!-- 뉴스 상세 모달 (해당 뉴스에 현실 연계가 있을 때만 현실 설명 코너 표시) -->
     <div id="news-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border-4 border-indigo-600">
             <div class="bg-indigo-600 text-white p-5 flex justify-between items-center">
@@ -298,9 +301,19 @@
                 <button onclick="closeNewsModal()" class="text-white hover:text-indigo-200 text-2xl font-bold p-1 leading-none">&times;</button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1 text-slate-700 bg-slate-50">
+            <div class="p-6 overflow-y-auto flex-1 text-slate-700 bg-slate-50 space-y-4">
+                <!-- 학급 뉴스 본문 -->
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div id="news-modal-content" class="text-base text-slate-700 leading-relaxed font-medium"></div>
+                </div>
+
+                <!-- 현실 경제가 연계된 뉴스에만 동적으로 노출되는 코너 -->
+                <div id="real-news-container" class="hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border-2 border-blue-200 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">🌐</span>
+                        <h4 class="font-black text-blue-950 text-sm md:text-base">현실 세상에서는 실제로 무슨 일이?</h4>
+                    </div>
+                    <p id="real-news-context" class="text-xs md:text-sm text-slate-700 leading-relaxed bg-white p-3.5 rounded-lg border border-blue-100"></p>
                 </div>
             </div>
 
@@ -346,14 +359,14 @@
         const defaultMarketState = {
             day: 1, baseRate: 2.0, macroContext: "",
             companies: [ 
-                { id: 1, name: "계산 잘하는 은행", price: 100, history: [100] }, 
-                { id: 2, name: "태무산 신용평가회사", price: 100, history: [100] },
-                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100] },
-                { id: 4, name: "지우개 칠판 청소", price: 100, history: [100] },
-                { id: 5, name: "말랑카우 우유", price: 100, history: [100] },
-                { id: 6, name: "쫄병 인력사무소", price: 100, history: [100] },
-                { id: 7, name: "신데렐라 청소회사", price: 100, history: [100] },
-                { id: 8, name: "기름나는 마트", price: 100, history: [100] }
+                { id: 1, name: "계산 잘하는 은행", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." }, 
+                { id: 2, name: "태무산 신용평가회사", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 3, name: "AI 태블릿 관리 업체", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 4, name: "지우개 칠판 청소", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 5, name: "말랑카우 우유", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 6, name: "쫄병 인력사무소", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 7, name: "신데렐라 청소회사", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." },
+                { id: 8, name: "기름나는 마트", price: 100, history: [100], lastReason: "시장 개장 기준가입니다." }
             ],
             publicNews: [], macroNewsText: "시장이 평온하게 시작되었습니다.",
             govAnnouncements: [],
@@ -684,6 +697,7 @@ ${companiesString}
 [작성 약속 및 가이드라인]
 1. 주가 변동 계산 (changes):
    - 목록의 모든 회사(빠짐없이 전부)에 대해 등락률(pct, 소수점 1자리)과 명확한 원인(reason)을 작성하세요.
+   - ★[매우 중요]: 작성한 이유(reason)는 내일 모든 학생들이 보게 됩니다. 초등학생 눈높이에 맞추어 왜 가격이 올랐거나 내렸는지 1~2문장으로 알기 쉽게 작성하세요.
    - 모든 회사를 억지로 현실 경제와 연결할 필요는 없습니다. 현실의 거시경제 흐름(금리, 유가, 물가, AI 기술 등)과 교실 내 학생 제보, 그리고 AI의 자유로운 교실 이야기 상상력을 자연스럽게 섞어서 구성하세요.
    - ★[과거 뉴스 및 복선 반영 필수]: 이전에 발행되었던 뉴스나 상황(예: 원자재 부족, 날씨 변화, 기술 개발 착수 등)이 실제로 시간이 흐르며 현실화되어 이번 주가 변동에 영향을 미치도록 인과관계를 자연스럽게 연결하세요.
    - 제보가 없는 회사라도 전체 경제 환경(금리, 교실 트렌드, 날씨, 다른 회사의 나비효과 등)을 바탕으로 흥미로운 이유로 주가를 변동시키세요.
@@ -691,12 +705,11 @@ ${companiesString}
 
 2. 내일 아침 발행할 경제 뉴스 피드 (news) - ★반드시 최소 4개 이상(4~5개) 작성:
    - ★[초등 6학년 맞춤]: 아이들이 쉽고 흥미진진하게 읽을 수 있는 친근하고 풍부한 어휘(3~5문장 이상)로 작성하세요.
-   - ★[뉴스 구성 2가지 필수 포함]:
-     ① **[결과 해설 뉴스 (1~2편)]**: 오늘 주가가 크게 오르거나 내린 회사의 배경 상황과, 과거 뉴스 떡밥이 어떻게 실현되었는지를 알려주는 뉴스.
-     ② **[★미래 예측/전망용 힌트 뉴스 (2~3편 - 핵심!)]**: 아이들이 **다음 날 또는 향후 주가를 추리하고 예측할 수 있도록 전체 경제 상황, 새로운 유행의 조짐, 원자재 수급, 법안 발의 조짐, 계절 변화 등의 징후를 담은 뉴스**.
-     ★[주의]: "A사 주가가 오를 것이다/내릴 것이다"처럼 결론을 직접 스포일러하지 마세요! "요즘 교실에 보드게임 열풍이 불 조짐을 보이고 있어 관련 용품 수요가 들썩이고 있습니다", "정부에서 환경 보호를 위해 일회용품 규제를 검토 중입니다"와 같이 **상황 정보**를 제공하여 아이들이 어떤 회사가 수혜를 입거나 손해를 볼지 상상하게 하세요. 그리고 **다음 턴에 실제로 이 상황을 주가에 반영**할 것입니다.
-   - 실제 상황이 반영된 뉴스는 **실제 현실 사회의 경제 소식 연계 데이터**를 반드시 포함하세요:
-     ① realWorldContext: 이 뉴스와 관련된 '실제 현실 사회에서는 어떤 일이 벌어지고 있는지'를 초등학생에게 친절하게 설명하는 글 (2~3문장).   
+   - ★[현실 경제 연계 코너 (선택)]: 현실 경제 상황과 관련된 뉴스인 경우에만 "realWorldContext" 필드에 "실제 현실 세상에서는 무슨 일이 벌어지고 있는지"를 친절하게 설명하는 글(2~3문장)을 넣으세요. 순수 교실 이벤트나 일반 소문 뉴스인 경우에는 "realWorldContext"를 null 또는 빈 문자열("")로 두세요.
+   - [뉴스 구성 규칙]:
+     ① 결과 해설 뉴스 (1~2편): 주가가 크게 변동한 회사의 배경 상황이나 이전 복선이 실현된 내용을 설명하는 뉴스.
+     ② ★미래 예측/전망용 힌트 뉴스 (2~3편): 아이들이 다음 날 또는 향후 주가를 추리할 수 있도록 전체 경제 상황, 새로운 유행/트렌드 조짐, 정책 검토, 원자재 수급, 계절 변화 등의 힌트를 주는 뉴스.
+     ★[주의]: 특정 회사의 주가가 오른다/내린다를 직접 말하지 말고, 상황 정보를 주어 아이들이 어떤 회사가 영향을 받을지 스스로 상상하고 추리하게 하세요.
 
 3. 중앙은행 예금 금리 추천 (suggestedDepositRate & reasoning):
    - 기준 금리와 시장 상황을 바탕으로 추천 금리와 알기 쉬운 이유를 작성하세요.
@@ -704,13 +717,29 @@ ${companiesString}
 [출력 형식] (반드시 순수 JSON 형식만 마크다운 없이 출력)
 {
   "news": [
-    {"title": "뉴스 제목 1", "content": "기사 내용 1 (6학년 눈높이, 3~5문장)"},
-    {"title": "뉴스 제목 2", "content": "기사 내용 2 (6학년 눈높이, 3~5문장)"},
-    {"title": "뉴스 제목 3", "content": "기사 내용 3 (6학년 눈높이, 3~5문장)"},
-    {"title": "뉴스 제목 4", "content": "기사 내용 4 (6학년 눈높이, 3~5문장)"}
+    {
+      "title": "뉴스 제목 1",
+      "content": "기사 내용 1 (6학년 눈높이, 3~5문장)",
+      "realWorldContext": "현실 세계와 관련된 뉴스일 때만 작성 (아니면 빈 문자열 '')"
+    },
+    {
+      "title": "뉴스 제목 2",
+      "content": "기사 내용 2 (6학년 눈높이, 3~5문장)",
+      "realWorldContext": ""
+    },
+    {
+      "title": "뉴스 제목 3",
+      "content": "기사 내용 3",
+      "realWorldContext": ""
+    },
+    {
+      "title": "뉴스 제목 4",
+      "content": "기사 내용 4",
+      "realWorldContext": ""
+    }
   ],
   "changes": [
-    {"id": 1, "pct": 3.5, "reason": "변동 이유 설명"}
+    {"id": 1, "pct": 3.5, "reason": "학생들이 이해하기 쉬운 변동 원인 설명 (1~2문장)"}
   ],
   "suggestedDepositRate": 2.5,
   "depositRateReasoning": "금리 추천 이유 설명"
@@ -776,25 +805,33 @@ ${companiesString}
         function generateRandomPreview() {
             let changes = window.state.companies.map(c => {
                 const move = (Math.random() * 12 - 6).toFixed(1);
-                return { id: c.id, pct: parseFloat(move), reason: "보름달국 시장의 자금 흐름과 전반적인 경제 환경 변화에 따라 주가가 변동했습니다." };
+                return { 
+                    id: c.id, 
+                    pct: parseFloat(move), 
+                    reason: "보름달국 시장의 자금 흐름과 전반적인 경제 환경 변화에 따라 주가가 변동했습니다." 
+                };
             });
             window.pendingAIResult = {
                 news: [
                     {
                         title: "보름달국 투자 시장, 신중한 탐색전 이어져", 
-                        content: "오늘 우리 반 시장에서는 다양한 기업들이 새로운 활동을 준비하면서 긴장감이 감돌았습니다. 한편 최근 교실 내에서 환경 정리와 청결에 대한 관심이 부쩍 높아지고 있어 관련 활동이 늘어날 것으로 보입니다. 투자자 친구들은 시장의 흐름과 소문에 귀를 기울이며 신중한 태도를 보이고 있습니다."
+                        content: "오늘 우리 반 시장에서는 다양한 기업들이 새로운 활동을 준비하면서 긴장감이 감돌았습니다. 한편 최근 교실 내에서 환경 정리와 청결에 대한 관심이 부쩍 높아지고 있어 관련 활동이 늘어날 것으로 보입니다. 투자자 친구들은 시장의 흐름과 소문에 귀를 기울이며 신중한 태도를 보이고 있습니다.",
+                        realWorldContext: "실제 현실에서도 기업들이 계절적 비수기나 정책 변화 시기에 신제품 출시를 조율하며 신중한 투자 기조를 유지합니다."
                     },
                     {
                         title: "다가오는 학급 행사를 앞두고 소비 패턴 변화 조짐?", 
-                        content: "학급 임원회에서 새로운 교실 이벤트를 검토하고 있다는 소식이 전해지면서 학급 내 자금 흐름이 요동칠 조짐을 보이고 있습니다. 문구류와 간식류의 소비량이 평소보다 늘어날 수 있다는 관측이 나오는 가운데, 어떤 회사가 이 기회를 잡게 될지 주목됩니다."
+                        content: "학급 임원회에서 새로운 교실 이벤트를 검토하고 있다는 소식이 전해지면서 학급 내 자금 흐름이 요동칠 조짐을 보이고 있습니다. 문구류와 간식류의 소비량이 평소보다 늘어날 수 있다는 관측이 나오는 가운데, 어떤 회사가 이 기회를 잡게 될지 주목됩니다.",
+                        realWorldContext: ""
                     },
                     {
                         title: "디지털 기기 활용 증가, 새로운 서비스 수요 꿈틀", 
-                        content: "수업 시간 태블릿 및 전자기기 사용량이 증가함에 따라 기기 관리와 충전 지원의 중요성이 커지고 있습니다. 친구들 사이에서는 기기를 더 안전하고 편리하게 관리해 줄 전문 서비스에 대한 관심이 높아지고 있습니다."
+                        content: "수업 시간 태블릿 및 전자기기 사용량이 증가함에 따라 기기 관리와 충전 지원의 중요성이 커지고 있습니다. 친구들 사이에서는 기기를 더 안전하고 편리하게 관리해 줄 전문 서비스에 대한 관심이 높아지고 있습니다.",
+                        realWorldContext: "현실 사회에서도 AI와 스마트 기기 보급이 늘어남에 따라 IT 유지보수 및 보안 서비스 산업이 급성장하고 있습니다."
                     },
                     {
                         title: "중앙은행 이자율 정책과 시장 유동성의 향방은?", 
-                        content: "최근 보름달국 은행의 예금 금리 변동 추이에 많은 투자자들의 관심이 쏠리고 있습니다. 금리가 안정세를 유지하면서 친구들이 은행 예금과 주식 투자 사이에서 어떤 선택을 내릴지 귀추가 주목됩니다."
+                        content: "최근 보름달국 은행의 예금 금리 변동 추이에 많은 투자자들의 관심이 쏠리고 있습니다. 금리가 안정세를 유지하면서 친구들이 은행 예금과 주식 투자 사이에서 어떤 선택을 내릴지 귀추가 주목됩니다.",
+                        realWorldContext: ""
                     }
                 ],
                 changes: changes,
@@ -805,7 +842,7 @@ ${companiesString}
         }
 
         function showPreviewModal(result) {
-            let html = `<div><h3 class="font-bold text-lg mb-3 flex items-center gap-2">📈 예상 가치 변동 내역</h3><div class="grid gap-3">`;
+            let html = `<div><h3 class="font-bold text-lg mb-3 flex items-center gap-2">📈 예상 가치 변동 및 공개될 원인</h3><div class="grid gap-3">`;
             result.changes.forEach(c => {
                 const comp = window.state.companies.find(comp => comp.id === c.id);
                 if(comp) {
@@ -817,15 +854,17 @@ ${companiesString}
                                     <span class="font-bold text-slate-800">${window.escapeHTML(comp.name)}</span>
                                     <span class="font-black ${diffColor}">${comp.price.toLocaleString()}달 ➔ ${newPrice.toLocaleString()}달 (${sign}${Math.abs(c.pct)}%)</span>
                                 </div>
-                                <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>원인 분석:</b> ${window.escapeHTML(c.reason)}</p>
+                                <p class="text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">💡 <b>학생 공개 원인:</b> ${window.escapeHTML(c.reason)}</p>
                              </div>`;
                 }
             });
             html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 경제 뉴스 피드 (총 ${result.news.length}편)</h3><div class="space-y-3">`;
             result.news.forEach(n => {
+                const hasReal = n.realWorldContext ? `<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded ml-1">🌐 현실연계</span>` : '';
                 html += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <h4 class="font-bold text-slate-800 mb-1">🗞️ ${window.escapeHTML(n.title)}</h4>
-                            <p class="text-sm text-slate-600 leading-relaxed">${window.escapeHTML(n.content)}</p>
+                            <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1">🗞️ ${window.escapeHTML(n.title)} ${hasReal}</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-2">${window.escapeHTML(n.content)}</p>
+                            ${n.realWorldContext ? `<div class="bg-blue-50 p-2 rounded-lg text-xs text-blue-900 border border-blue-100"><b>🌐 현실 세상에서는?</b> ${window.escapeHTML(n.realWorldContext)}</div>` : ''}
                          </div>`;
             });
             html += `</div></div>`;
@@ -842,6 +881,7 @@ ${companiesString}
                 if (target) {
                     target.price = Math.round(target.price * (1 + (c.pct / 100)));
                     target.history.push(target.price);
+                    target.lastReason = c.reason || "시장 상황에 의해 변동했습니다."; // 아이들에게 보여줄 원인 저장
                 }
             });
             
@@ -849,7 +889,8 @@ ${companiesString}
                 window.state.publicNews.unshift({ 
                     day: window.state.day, 
                     title: n.title, 
-                    content: n.content
+                    content: n.content,
+                    realWorldContext: n.realWorldContext || ""
                 });
             });
 
@@ -862,7 +903,8 @@ ${companiesString}
                     window.state.publicNews.unshift({ 
                         day: window.state.day, 
                         title: `🚨 [정부 공식 발표] ${targetLabel}`, 
-                        content: i.text
+                        content: i.text,
+                        realWorldContext: ""
                     });
                 }
             });
@@ -880,7 +922,7 @@ ${companiesString}
             btn.disabled = false;
             btn.innerText = "오늘 장 마감 및 AI 분석하기";
             window.pendingAIResult = null;
-            alert(`✅ 하루 마감 완료! 내일 시장 뉴스피드가 발행되었습니다.`);
+            alert(`✅ 하루 마감 완료! 새 주가와 뉴스피드가 발행되었습니다.`);
         }
 
         window.cancelNextDay = function() {
@@ -900,13 +942,26 @@ ${companiesString}
                 const pct = last > 0 ? ((diff / last) * 100).toFixed(1) : 0; 
                 const color = diff > 0 ? 'text-red-500' : (diff < 0 ? 'text-blue-500' : 'text-slate-500');
                 const sign = diff > 0 ? '▲' : (diff < 0 ? '▼' : '-');
+                
                 list.innerHTML += `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-slate-500">${window.escapeHTML(c.name)}</span>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-slate-500">${window.escapeHTML(c.name)}</span>
+                            </div>
+                            <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}달</div>
+                            <div class="text-[12px] font-bold ${color} mt-1">${sign} ${Math.abs(diff).toLocaleString()}달 (${sign}${Math.abs(pct)}%)</div>
                         </div>
-                        <div class="text-2xl font-black ${color}">${c.price.toLocaleString()}달</div>
-                        <div class="text-[12px] font-bold ${color} mt-1">${sign} ${Math.abs(diff).toLocaleString()}달 (${sign}${Math.abs(pct)}%)</div>
+
+                        <!-- 💡 학생들에게도 공개되는 당일 변동 원인 표시 상자 -->
+                        <div class="mt-3 pt-2.5 border-t border-slate-200 bg-white p-2.5 rounded-lg border border-slate-100 shadow-sm">
+                            <p class="font-bold text-indigo-700 text-[11px] mb-1 flex items-center gap-1">
+                                <span>💡</span> 오늘의 주가 변동 원인
+                            </p>
+                            <p class="text-[11px] text-slate-600 leading-relaxed break-keep">
+                                ${window.escapeHTML(c.lastReason || '첫날 기준 가격입니다.')}
+                            </p>
+                        </div>
                     </div>`;
             });
             window.updateInterviewPlaceholder(); 
@@ -921,9 +976,13 @@ ${companiesString}
             feed.innerHTML = window.state.publicNews.map((n, idx) => {
                 const isObject = typeof n === 'object';
                 const safeTitle = isObject ? `[${n.day}일차] ${window.escapeHTML(n.title)}` : window.escapeHTML(n);
+                const hasReal = isObject && n.realWorldContext ? `<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded ml-1 shrink-0">🌐 현실연계</span>` : '';
                 return `
                 <div class="p-3.5 bg-slate-50 rounded-xl border-l-4 border-indigo-500 cursor-pointer hover:bg-indigo-50 hover:border-indigo-600 transition shadow-sm flex justify-between items-center group" onclick="openNewsModal(${idx})">
-                    <span class="font-bold text-slate-700 group-hover:text-indigo-900 truncate pr-2">📰 ${safeTitle}</span>
+                    <div class="flex items-center gap-1.5 truncate pr-2">
+                        <span class="font-bold text-slate-700 group-hover:text-indigo-900 truncate">📰 ${safeTitle}</span>
+                        ${hasReal}
+                    </div>
                     <span class="text-[11px] text-indigo-500 font-semibold shrink-0 bg-white px-2 py-0.5 rounded border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition">자세히 보기 ➔</span>
                 </div>`;
             }).join('');
@@ -939,6 +998,16 @@ ${companiesString}
 
             document.getElementById('news-modal-title').innerText = title;
             document.getElementById('news-modal-content').innerHTML = window.escapeHTML(content).replace(/\n/g, '<br>');
+            
+            // 현실 연계 내용이 있는 뉴스에만 해당 코너를 동적으로 표시
+            const realNewsContainer = document.getElementById('real-news-container');
+            if (isObject && n.realWorldContext && n.realWorldContext.trim() !== '') {
+                realNewsContainer.classList.remove('hidden');
+                document.getElementById('real-news-context').innerHTML = window.escapeHTML(n.realWorldContext);
+            } else {
+                realNewsContainer.classList.add('hidden');
+            }
+
             document.getElementById('news-modal').classList.remove('hidden');
         }
 
@@ -1025,15 +1094,25 @@ ${companiesString}
             if (!confirm(`${target}일차 상태로 시간을 되돌리시겠습니까?`)) return;
 
             window.state.day = target;
-            window.state.companies.forEach(c => { c.history = c.history.slice(0, target); c.price = c.history[c.history.length - 1]; });
+            window.state.companies.forEach(c => { 
+                c.history = c.history.slice(0, target); 
+                c.price = c.history[c.history.length - 1]; 
+                c.lastReason = "시간 이동으로 주가가 복구되었습니다.";
+            });
             window.state.publicNews = window.state.publicNews.filter(n => n.day < target);
-            window.state.govAnnouncements = []; window.state.macroNewsText = "시간을 되돌려 복구했습니다.";
-            set(interviewsRef, null); saveState(); alert(`${target}일차로 롤백 완료.`);
+            window.state.govAnnouncements = []; 
+            window.state.macroNewsText = "시간을 되돌려 복구했습니다.";
+            set(interviewsRef, null); 
+            saveState(); 
+            alert(`${target}일차로 롤백 완료.`);
         }
 
         window.resetToDayOne = function() { 
             if (confirm("정말로 모든 장부를 다 지우고 처음부터 다시 시작하시겠습니까?")) { 
-                window.state = { ...defaultMarketState }; set(interviewsRef, null); saveState(); alert("초기화되었습니다.");
+                window.state = { ...defaultMarketState }; 
+                set(interviewsRef, null); 
+                saveState(); 
+                alert("초기화되었습니다.");
             } 
         }
 
@@ -1132,7 +1211,7 @@ ${companiesString}
             const name = document.getElementById('new-company-name').value.trim();
             const price = parseInt(document.getElementById('new-company-price').value);
             if(!name || isNaN(price)) return alert("정확하게 입력해 주세요.");
-            window.state.companies.push({ id: Date.now(), name, price, history: Array(window.state.day).fill(price) });
+            window.state.companies.push({ id: Date.now(), name, price, history: Array(window.state.day).fill(price), lastReason: "신규 상장된 기업입니다." });
             saveState();
             document.getElementById('new-company-name').value = ''; document.getElementById('new-company-price').value = '';
         }
