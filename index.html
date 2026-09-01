@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 반 주식 시장 v10.7</title>
+    <title>우리 반 주식 시장 v11.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -52,6 +52,7 @@
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 왼쪽 주가 및 차트 영역 -->
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📈 우리 반 회사들의 주식 가격 (1달 기준)</h2>
@@ -59,16 +60,15 @@
                     </div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <canvas id="marketChart" height="130"></canvas>
-                    </div>
-
-                    <div id="public-investment-board-container" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h2 class="text-lg font-black text-slate-800 mb-1 flex items-center gap-2">🎯 친구들의 주식 통장 현황판</h2>
-                        <p class="text-xs text-slate-400 mb-4">반 친구들이 투자한 원금과 주가 변동에 맞추어 실시간으로 변하는 평가 금액을 확인합니다.</p>
-                        <div id="public-investment-board" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto scrollbar-hide pr-1"></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">📊 주가 변동 추이 차트</h2>
+                            <span class="text-xs text-slate-400 font-medium">회사별 일자별 가격 흐름</span>
+                        </div>
+                        <canvas id="marketChart" height="150"></canvas>
                     </div>
                 </div>
 
+                <!-- 오른쪽 제보 및 뉴스 영역 -->
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-indigo-600">
                         <div class="flex justify-between items-center mb-4">
@@ -111,17 +111,21 @@
 
                     <div id="my-tips-container" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h2 class="text-lg font-bold mb-4">💬 내 제보 확인</h2>
-                        <div id="my-tips-list" class="space-y-3 max-h-64 overflow-y-auto scrollbar-hide pr-2 text-sm">
-                            </div>
+                        <div id="my-tips-list" class="space-y-3 max-h-64 overflow-y-auto scrollbar-hide pr-2 text-sm"></div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm h-80 flex flex-col border border-slate-100">
-                        <h2 class="text-lg font-bold mb-4">📰 교실 소문 & 경제 뉴스 피드</h2>
-                        <div id="public-news-feed" class="flex-1 overflow-y-auto space-y-3 text-sm scrollbar-hide pr-2"></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col border border-slate-100 min-h-[360px]">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-bold">📰 교실 소문 & 경제 뉴스 피드</h2>
+                            <span class="text-[11px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded border border-indigo-100">실시간 발행</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">뉴스를 읽고 다음 주가의 방향을 힌트로 추리해보세요!</p>
+                        <div id="public-news-feed" class="flex-1 overflow-y-auto space-y-3 text-sm scrollbar-hide pr-2 max-h-96"></div>
                     </div>
                 </div>
             </div>
 
+            <!-- 관리자(선생님) 패널 -->
             <div id="admin-panel" class="hidden mt-10 p-6 bg-rose-50 rounded-2xl border-2 border-rose-100 shadow-xl">
                 <h2 class="text-xl font-black text-rose-800 mb-4 flex items-center gap-2">🛠️ 보름달국 행정부 & 뉴스 확인 본부</h2>
                 
@@ -134,26 +138,6 @@
                         <p class="font-bold text-amber-700 mb-1">💡 AI의 경제 분석 리포트 (금리 추천 이유):</p>
                         <p id="teacher-rate-reasoning" class="whitespace-pre-line"></p>
                     </div>
-                </div>
-
-                <div class="bg-emerald-50 p-5 rounded-xl shadow-sm border-2 border-emerald-200 mb-8">
-                    <h3 class="font-black text-emerald-800 mb-1 flex items-center gap-2">📊 선생님 전용 주식 직접 기록 데스크</h3>
-                    <p class="text-xs text-emerald-600 mb-4">학생들이 투자를 원하는 만큼의 **금액**을 입력해 주세요. 주식 수 개념 없이 주가 상승/하락률에 맞춰 가치가 자동으로 변동됩니다.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-emerald-100">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">👤 학생(투자자) 선택</label>
-                            <select id="investor-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">🏢 투자할 회사 선택</label>
-                            <select id="investment-company-select" class="w-full border p-2 rounded-lg text-sm bg-slate-50 outline-none focus:border-emerald-400"></select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">💰 투자 원금 입력 (달)</label>
-                            <input type="number" id="invest-amount-input" placeholder="원금 입력" class="w-full border p-2 rounded-lg text-sm outline-none focus:border-emerald-400">
-                        </div>
-                    </div>
-                    <button onclick="addInvestmentByTeacher()" class="mt-3 w-full bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm">장부에 투자금 등록하기 (기존 투자금에 더해집니다)</button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -190,7 +174,7 @@
 
                     <div class="bg-white p-5 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
                         <h3 class="font-bold text-rose-700 mb-2">🚀 오늘 보름달국 시장 마감</h3>
-                        <p class="text-xs text-slate-500 mb-4">마감을 누르면 AI가 경제 상황과 소문, 주식 숫자를 계산해서 다음 날 주가를 만듭니다.</p>
+                        <p class="text-xs text-slate-500 mb-4">마감을 누르면 AI가 이전 뉴스 상황과 제보들을 종합 계산하여 다음 날 주가와 힌트 뉴스를 발행합니다.</p>
                         <button id="process-day-btn" onclick="processNextDay()" class="w-full py-6 bg-rose-600 text-white rounded-xl font-black text-xl hover:bg-rose-700 transition shadow-lg transform hover:scale-[1.02]">오늘 장 마감 및 AI 분석하기</button>
                     </div>
                 </div>
@@ -253,12 +237,13 @@
         </div>
     </div>
 
+    <!-- 미리보기 모달 -->
     <div id="preview-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border-4 border-indigo-500">
             <div class="bg-indigo-600 text-white p-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-black flex items-center gap-2">👀 다음 날 변동 결과 확인 (최종 승인)</h2>
-                    <p class="text-indigo-200 text-xs mt-1">AI가 계산한 내일의 주가와 뉴스를 확인하고 허락해주세요.</p>
+                    <p class="text-indigo-200 text-xs mt-1">AI가 계산한 내일의 주가와 힌트 뉴스를 확인하고 허락해주세요.</p>
                 </div>
             </div>
             <div id="preview-content" class="p-6 overflow-y-auto flex-1 space-y-6 text-sm text-slate-700 bg-slate-50"></div>
@@ -269,6 +254,7 @@
         </div>
     </div>
 
+    <!-- 유저 수정 모달 -->
     <div id="edit-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden border-2 border-blue-500">
             <div class="bg-blue-600 text-white p-4">
@@ -304,14 +290,14 @@
         </div>
     </div>
 
+    <!-- 뉴스 모달 -->
     <div id="news-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border-4 border-indigo-600">
             <div class="bg-indigo-600 text-white p-5 flex justify-between items-center">
                 <h2 id="news-modal-title" class="text-xl font-black flex items-center gap-2">📰 뉴스 제목</h2>
                 <button onclick="closeNewsModal()" class="text-white hover:text-indigo-200 text-2xl font-bold p-1 leading-none">&times;</button>
             </div>
-            <div id="news-modal-content" class="p-8 overflow-y-auto flex-1 text-base text-slate-700 bg-slate-50 leading-relaxed font-medium">
-                </div>
+            <div id="news-modal-content" class="p-8 overflow-y-auto flex-1 text-base text-slate-700 bg-slate-50 leading-relaxed font-medium"></div>
             <div class="p-4 border-t bg-white flex justify-end">
                 <button onclick="closeNewsModal()" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-md">닫기</button>
             </div>
@@ -367,8 +353,7 @@
             govAnnouncements: [],
             users: [ { id: 'teacher', pw: '1234', name: '선생님', role: 'teacher', companyId: null } ],
             suggestedDepositRate: 2.5,
-            depositRateReasoning: "주식 시장 시스템이 켜졌습니다.",
-            investments: []
+            depositRateReasoning: "주식 시장 시스템이 켜졌습니다."
         };
 
         window.state = null; 
@@ -405,7 +390,6 @@
                 if(!window.state.publicNews) window.state.publicNews = [];
                 if(!window.state.govAnnouncements) window.state.govAnnouncements = [];
                 if(!window.state.users) window.state.users = [];
-                if(!window.state.investments) window.state.investments = []; 
                 if (window.currentUser) {
                     const updatedUser = window.state.users.find(u => u.id === window.currentUser.id);
                     if (updatedUser) window.currentUser = updatedUser;
@@ -480,21 +464,10 @@
                 document.getElementById('macro-context-input').value = window.state.macroContext || "";
                 window.renderAdminTables();
                 renderModerationList();
-                renderTeacherInvestmentPanel();
             } else {
                 document.getElementById('admin-panel').classList.add('hidden');
                 document.getElementById('my-tips-container').classList.remove('hidden');
                 renderMyTips();
-            }
-
-            const myCompany = window.state.companies.find(c => c.id == window.currentUser.companyId);
-            const isBankEmployee = window.currentUser.role === 'employee' && myCompany && myCompany.name.includes('은행');
-            
-            if (window.currentUser.role === 'teacher' || isBankEmployee) {
-                document.getElementById('public-investment-board-container').classList.remove('hidden');
-                renderInvestmentDashboard();
-            } else {
-                document.getElementById('public-investment-board-container').classList.add('hidden');
             }
 
             document.getElementById('employee-persona-label').classList.add('hidden');
@@ -550,7 +523,6 @@
                 return;
             }
 
-            // 학생 화면에서 선생님 코멘트(teacherComment)를 숨기도록 수정함
             list.innerHTML = myTips.reverse().map(i => {
                 let statusBadge = `<span class="text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">결과 대기중</span>`;
                 if(i.status === 'true') statusBadge = `<span class="text-green-600 bg-green-100 px-1.5 py-0.5 rounded text-[10px] font-bold">채택됨 (뉴스 반영)</span>`;
@@ -564,149 +536,6 @@
                             <p class="text-xs text-slate-600 leading-relaxed break-all">${window.escapeHTML(i.text)}</p>
                         </div>`;
             }).join('');
-        }
-
-        function renderTeacherInvestmentPanel() {
-            const investorSelect = document.getElementById('investor-select');
-            const companySelect = document.getElementById('investment-company-select');
-            
-            if (investorSelect && window.state.users) {
-                const students = window.state.users.filter(u => u.id !== 'teacher');
-                investorSelect.innerHTML = students.map(u => `<option value="${window.escapeHTML(u.id)}">${window.escapeHTML(u.name)} (${window.escapeHTML(u.id)})</option>`).join('');
-            }
-            if (companySelect && window.state.companies) {
-                companySelect.innerHTML = window.state.companies.map(c => `<option value="${c.id}">${window.escapeHTML(c.name)} (현재가: ${c.price}달)</option>`).join('');
-            }
-        }
-
-        window.addInvestmentByTeacher = function() {
-            const userId = document.getElementById('investor-select').value;
-            const companyId = parseInt(document.getElementById('investment-company-select').value);
-            const totalInvested = parseInt(document.getElementById('invest-amount-input').value);
-
-            if (!userId || isNaN(companyId) || isNaN(totalInvested) || totalInvested <= 0) {
-                return alert("투자 원금을 바르게 입력해주세요.");
-            }
-
-            const user = window.state.users.find(u => u.id === userId);
-            const company = window.state.companies.find(c => c.id === companyId);
-            if (!user || !company) return alert("학생 또는 회사 정보를 찾을 수 없습니다.");
-
-            const addedShares = totalInvested / company.price;
-
-            if (!window.state.investments) window.state.investments = [];
-
-            const existIdx = window.state.investments.findIndex(inv => inv.userId === userId && inv.companyId === companyId);
-            
-            if (existIdx > -1) {
-                if (confirm(`${user.name} 학생은 이미 이 회사에 투자한 장부가 있습니다.\n\n[확인]을 누르면 기존 투자 원금에 이 금액을 더하고,\n[취소]를 누르면 새 투자 금액으로 아예 덮어씁니다.`)) {
-                    window.state.investments[existIdx].totalInvested += totalInvested;
-                    window.state.investments[existIdx].sharesCount += addedShares;
-                } else {
-                    window.state.investments[existIdx] = { userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount: addedShares };
-                }
-            } else {
-                window.state.investments.push({ userId, userName: user.name, companyId, companyName: company.name, totalInvested, sharesCount: addedShares });
-            }
-
-            saveState();
-            alert(`✅ 투자금 기록 완료: ${user.name} -> ${company.name} [원금 ${totalInvested}달 추가] 장부에 입력했습니다.`);
-            document.getElementById('invest-amount-input').value = '';
-        }
-
-        function renderInvestmentDashboard() {
-            const board = document.getElementById('public-investment-board');
-            if (!board) return;
-
-            if (!window.state.investments || window.state.investments.length === 0) {
-                board.innerHTML = `<div class="col-span-full p-8 text-center text-slate-300 text-sm font-medium bg-slate-50 rounded-xl border border-dashed">장부에 기록된 투자금 현황이 없습니다.</div>`;
-                return;
-            }
-
-            const grouped = {};
-            window.state.investments.forEach(inv => {
-                if (!grouped[inv.userId]) { grouped[inv.userId] = { userName: inv.userName, items: [] }; }
-                grouped[inv.userId].items.push(inv);
-            });
-
-            const isManager = window.currentUser?.role === 'teacher';
-            let html = '';
-
-            for (const userId in grouped) {
-                const group = grouped[userId];
-                let rowsHtml = '';
-                let userTotalInvest = 0;
-                let userTotalEval = 0;
-
-                group.items.forEach(inv => {
-                    const currentComp = window.state.companies.find(c => c.id === inv.companyId);
-                    const currentPrice = currentComp ? currentComp.price : 0;
-                    const compDisplay = currentComp ? window.escapeHTML(currentComp.name) : `❌ 회사 사라짐(${window.escapeHTML(inv.companyName)})`;
-                    
-                    const evaluation = Math.round(inv.sharesCount * currentPrice); 
-                    const profitLoss = evaluation - inv.totalInvested; 
-                    
-                    userTotalInvest += inv.totalInvested;
-                    userTotalEval += evaluation;
-
-                    const plColor = profitLoss > 0 ? 'text-red-500 font-bold' : (profitLoss < 0 ? 'text-blue-500 font-bold' : 'text-slate-500');
-                    const plSign = profitLoss > 0 ? '+' : '';
-                    const deleteBtn = isManager ? `<button onclick="deleteInvestment('${window.escapeHTML(inv.userId)}', ${inv.companyId})" class="text-red-400 hover:text-red-600 font-bold ml-2">❌</button>` : '';
-
-                    rowsHtml += `
-                        <tr class="border-b text-xs hover:bg-white transition text-center ${!currentComp ? 'bg-red-50/50' : ''}">
-                            <td class="py-2 text-left pl-2 font-medium">${compDisplay}</td>
-                            <td class="py-2 text-right font-mono">${inv.totalInvested.toLocaleString()}달</td>
-                            <td class="py-2 text-right font-mono text-indigo-600 font-semibold">${evaluation.toLocaleString()}달</td>
-                            <td class="py-2 text-right font-mono ${plColor}">${plSign}${profitLoss.toLocaleString()}달</td>
-                            ${isManager ? `<td class="py-2 text-center">${deleteBtn}</td>` : ''}
-                        </tr>
-                    `;
-                });
-
-                const groupPL = userTotalEval - userTotalInvest;
-                const groupPLColor = groupPL > 0 ? 'text-red-600 font-black' : (groupPL < 0 ? 'text-blue-600 font-black' : 'text-slate-600 font-bold');
-                const groupPLSign = groupPL > 0 ? '+' : '';
-
-                html += `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-2 border-b border-slate-200 pb-1.5">
-                                <span class="font-black text-sm text-indigo-950">👤 ${window.escapeHTML(group.userName)} <span class="text-[11px] text-slate-400 font-normal">(${window.escapeHTML(userId)})</span></span>
-                                <span class="text-xs bg-white px-2 py-0.5 rounded border font-semibold">총 손익: <span class="${groupPLColor}">${groupPLSign}${groupPL.toLocaleString()}달</span></span>
-                            </div>
-                            <table class="w-full text-collapse">
-                                <thead>
-                                    <tr class="text-[10px] text-slate-400 border-b text-center font-bold">
-                                        <th class="py-1 text-left pl-2">회사 이름</th>
-                                        <th class="py-1 text-right">투자 원금</th>
-                                        <th class="py-1 text-right">현재 가치</th>
-                                        <th class="py-1 text-right">이익/손해</th>
-                                        ${isManager ? `<th class="py-1 w-6">🔧</th>` : ''}
-                                    </tr>
-                                </thead>
-                                <tbody>${rowsHtml}</tbody>
-                            </table>
-                        </div>
-                        <div class="mt-3 pt-2 bg-indigo-50/50 rounded-lg p-2 text-[11px] font-bold text-slate-700 flex justify-between">
-                            <span>계좌 합계</span>
-                            <div class="flex gap-3 font-mono">
-                                <span>원금: ${userTotalInvest.toLocaleString()}달</span>
-                                <span class="text-indigo-700">평가액: ${userTotalEval.toLocaleString()}달</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            board.innerHTML = html;
-        }
-
-        window.deleteInvestment = function(userId, companyId) {
-            if (!confirm("이 투자 기록을 장부에서 지우시겠습니까?")) return;
-            if (window.state.investments) {
-                window.state.investments = window.state.investments.filter(inv => !(inv.userId === userId && inv.companyId === companyId));
-                saveState();
-            }
         }
 
         window.updateInterviewPlaceholder = function() {
@@ -785,7 +614,7 @@
                 userId: window.currentUser.id, author: window.currentUser.name,
                 role: effectiveRole, text: text, companyId: companyId,
                 compName: compName, status: 'unverified', isAnnounce: isAnnounce || false,
-                teacherComment: "" // AI 참고용 메모 공간
+                teacherComment: ""
             };
 
             push(interviewsRef, payload).then(() => {
@@ -807,7 +636,6 @@
             const interviewsArray = Object.keys(window.interviews).map(key => ({ ...window.interviews[key], key }));
             const validInterviews = interviewsArray.filter(i => i.status !== 'false');
             
-            // AI 프롬프트에 선생님 메모를 몰래 추가해서 넘기기
             const newsString = validInterviews.map(i => {
                 const statusLabel = i.status === 'true' ? '[사실로 확인됨]' : '[검증 안 된 소문]';
                 const roleLabel = i.role === 'employee' ? '[회사 내부 정보]' : (i.role === 'gov' ? '[정부 공식]' : (i.role === 'gov_comment' ? '[정부 의견]' : '[일반시민]'));
@@ -816,6 +644,13 @@
             }).join('\n');
             
             const companiesString = window.state.companies.map(c => `${c.name}(ID:${c.id}, 현재가:${c.price}달)`).join('\n');
+            
+            // 직전 3일간의 뉴스 히스토리 추출 (과거 복선 연계용)
+            const recentNews = (window.state.publicNews || []).slice(0, 6);
+            const recentNewsString = recentNews.length > 0 
+                ? recentNews.map(n => `[${n.day}일차] ${n.title}: ${n.content}`).join('\n')
+                : "과거 발행된 뉴스가 아직 없습니다.";
+
             const teacherSecretKey = localStorage.getItem('my_secret_gemini_key');
 
             if (!teacherSecretKey) {
@@ -825,30 +660,49 @@
             }
 
             try {
-                const prompt = `당신은 초등학교 학급 가상 국가('보름달국')의 경제 주식 시뮬레이터를 돕는 교육용 경제 AI 전문가입니다. 아래 정보를 바탕으로 다음 날의 자산 가치 변동과 기사를 재미있게 만드세요.
+                const prompt = `당신은 초등학교 학급 가상 국가('보름달국')의 경제 주식 시뮬레이터를 돕는 교육용 경제 AI 전문가입니다. 아래 정보를 종합 분석하여 다음 날의 주가 변동과 발행될 기사를 흥미진진하게 만드세요.
 
-[현재 국가 상태]
+[현재 국가 기본 정보]
+- 현재 일차: ${window.state.day}일차 -> 내일: ${window.state.day + 1}일차
 - 기준 금리: ${window.state.baseRate}%
-- 전체 상황 이야기: ${window.state.macroContext || "특별한 상황 없음. AI가 재밌는 교실 경제 이벤트를 마음껏 상상할 것."}
-- 학생들이 보낸 소문/제보 요약:
-${newsString || "이번 턴에는 학생 제보가 하나도 없습니다."}
-- 현재 회사 상태 (반드시 아래 리스트의 모든 회사의 주가를 변동시켜야 함):
+- 선생님이 입력한 학급/사회 상황: ${window.state.macroContext || "특별한 입력 없음. AI가 재밌는 교실 경제 이벤트를 상상할 것."}
+
+[직전 과거에 보름달국에 발행되었던 뉴스 히스토리 (매우 중요: 과거에 뿌린 떡밥/상황 반영용)]
+${recentNewsString}
+
+[오늘 학생들이 접수한 새로운 소문 및 제보]
+${newsString || "오늘 접수된 학생 제보가 없습니다."}
+
+[현재 상장된 회사 목록]
 ${companiesString}
 
-[작성 약속 가이드라인]
-1. 가치 변동 (changes): ★[매우 중요] 현재 상태에 명시된 **모든 회사**에 대한 등락률(pct, 소수점 1자리)과 이유(reason)를 **빠짐없이 전부** 작성하세요. 학생들의 제보가 없는 회사라도, AI가 무작위로 재밌는 상상력(예: 공장에 쥐가 나타났다, 새로운 기술을 발명했다 등)을 발휘하여 주가를 올리거나 내려야 합니다. 
-★[가이드 메모 주의사항] 제보 내용에 '[선생님의 AI 가이드 메모: ...]'가 있다면, 이는 학생이 적은 것이 아니라 AI가 뉴스나 주가를 만들 때 참고해야 할 관리자(선생님)의 비밀 지시사항입니다. 이 지시사항을 최우선으로 반영하여 결과값을 생성하세요. 단, 뉴스나 원인 분석 내용에 "선생님 메모에 따르면"과 같은 말은 절대 쓰면 안 됩니다.
-2. 경제 뉴스 (news): 학생들이 다음 주식 투자를 추리할 수 있게 3~4개의 뉴스를 만들어 주세요.
-   ★[매우 중요] 초등학교 6학년 학생들이 쉽게 읽고 이해할 수 있도록 친근하고 쉬운 어휘를 사용하세요. 
-   ★[분량 및 디테일] 각 뉴스는 최소 3~5문장 이상으로 길고 풍부하게 작성하세요. "가치가 무조건 오른다/내린다"를 직접 말하지 말고 모호하고 은유적인 표현을 써서 아이들이 알아맞히게 하세요. 학생 제보가 없었던 회사들에 대한 깜짝 뉴스도 포함해주면 좋습니다.
-3. 예금 금리 추천: 기준금리 기반으로 정하고 이유를 쉽고 간단히 설명하세요.
+[작성 원칙 및 핵심 가이드라인]
+1. 주가 변동 계산 (changes):
+   - 목록의 **모든 회사(빠짐없이 전부)**에 대해 등락률(pct, 소수점 1자리)과 명확한 원인(reason)을 작성하세요.
+   - ★[과거 뉴스 및 복선 반영 필수]: 이전에 발행되었던 뉴스나 상황(예: 원자재 부족, 날씨 변화, 기술 개발 착수 등)이 실제로 시간이 흐르며 현실화되어 이번 주가 변동에 영향을 미치도록 인과관계를 자연스럽게 연결하세요.
+   - 제보가 없는 회사라도 전체 경제 환경(금리, 교실 트렌드, 날씨, 다른 회사의 나비효과 등)을 바탕으로 흥미로운 이유로 주가를 변동시키세요.
+   - ★[선생님 비밀 메모 지시]: 제보에 '[선생님의 AI 가이드 메모: ...]'가 있다면 최우선으로 반영하되, 기사 본문이나 이유에 "선생님 메모"라는 말은 절대 노출하지 마세요.
 
-[출력 형식] (아래 구조의 순수 JSON만 마크다운 기호 없이 출력)
+2. 내일 아침 발행할 경제 뉴스 피드 (news) - 총 3~4편:
+   - ★[초등 6학년 맞춤]: 아이들이 쉽고 흥미진진하게 읽을 수 있는 친근하고 풍부한 어휘(3~5문장 이상)로 작성하세요.
+   - ★[뉴스 구성 2가지 필수 포함]:
+     ① **[결과 해설 뉴스 (1~2편)]**: 오늘 주가가 크게 오르거나 내린 회사의 배경 상황과, 과거 뉴스 떡밥이 어떻게 실현되었는지를 알려주는 뉴스.
+     ② **[★미래 예측/전망용 힌트 뉴스 (2~3편 - 핵심!)]**: 아이들이 **다음 날 또는 향후 주가를 추리하고 예측할 수 있도록 전체 경제 상황, 새로운 유행의 조짐, 원자재 수급, 법안 발의 조짐, 계절 변화 등의 징후를 담은 뉴스**.
+     ★[주의]: "A사 주가가 오를 것이다/내릴 것이다"처럼 결론을 직접 스포일러하지 마세요! "요즘 교실에 보드게임 열풍이 불 조짐을 보이고 있어 관련 용품 수요가 들썩이고 있습니다", "정부에서 환경 보호를 위해 일회용품 규제를 검토 중입니다"와 같이 **상황 정보**를 제공하여 아이들이 어떤 회사가 수혜를 입거나 손해를 볼지 상상하게 하세요. 그리고 **다음 턴에 실제로 이 상황을 주가에 반영**할 것입니다.
+
+3. 중앙은행 예금 금리 추천 (suggestedDepositRate & reasoning):
+   - 기준 금리와 시장 유동성을 바탕으로 추천 금리와 알기 쉬운 이유를 작성하세요.
+
+[출력 형식] (반드시 순수 JSON 형식만 마크다운 \`\`\`json 기호 없이 출력)
 {
-  "news": [{"title": "뉴스 제목", "content": "기사 내용 (6학년 눈높이, 3~5문장 이상 풍부하게)"}],
-  "changes": [{"id": 1, "pct": 5.5, "reason": "제보가 없었지만, AI가 상상한 재밌는 이유"}, ... (모든 회사 포함)],
+  "news": [
+    {"title": "뉴스 제목", "content": "기사 내용 (6학년 눈높이, 3~5문장 이상 상세하게, 미래 힌트 및 상황 묘사)"}
+  ],
+  "changes": [
+    {"id": 1, "pct": 4.5, "reason": "이전 뉴스에서 언급된 소비 증가 상황이 본격적으로 반영되어 실적이 개선됨"}
+  ],
   "suggestedDepositRate": 2.5,
-  "depositRateReasoning": "이유 설명"
+  "depositRateReasoning": "금리 추천 이유 설명"
 }`;
                 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${teacherSecretKey}`, {
@@ -864,7 +718,7 @@ ${companiesString}
                 showPreviewModal(window.pendingAIResult);
             } catch (e) {
                 console.error(e);
-                alert("AI 연결에 일시적인 문제가 있어 기본 뉴스 창을 띄웁니다.");
+                alert("AI 연결에 일시적인 문제가 있어 기본 뉴스를 생성합니다.");
                 generateRandomPreview();
             }
         }
@@ -872,10 +726,19 @@ ${companiesString}
         function generateRandomPreview() {
             let changes = window.state.companies.map(c => {
                 const move = (Math.random() * 12 - 6).toFixed(1);
-                return { id: c.id, pct: parseFloat(move), reason: "반 친구들의 투자 자금 흐름과 교실 시장의 보이지 않는 손에 의해 가치가 변동했습니다." };
+                return { id: c.id, pct: parseFloat(move), reason: "보름달국 시장의 자금 흐름과 전반적인 경제 환경 변화에 따라 주가가 변동했습니다." };
             });
             window.pendingAIResult = {
-                news: [{title: "보름달국 투자 시장, 알 수 없는 안개 속으로?", content: "요즘 우리 반 투자 시장의 분위기가 예사롭지 않습니다. 친구들 사이에서 여러 회사에 대한 다양한 소문이 퍼지면서 긴장감이 돌고 있기 때문입니다. 한 투자 전문 친구는 '지금은 어떤 회사가 크게 성장할지 섣불리 맞히기 어려운 흥미진진한 타이밍'이라고 말했습니다. 과연 내일은 어떤 회사가 웃게 될지 교실의 관심이 한곳으로 모이고 있습니다."}],
+                news: [
+                    {
+                        title: "보름달국 시장, 전반적인 분위기 탐색전 이어져", 
+                        content: "오늘 우리 반 시장에서는 다양한 기업들이 새로운 활동을 준비하면서 긴장감이 감돌았습니다. 한편 최근 교실 내에서 환경 정리와 청결에 대한 관심이 부쩍 높아지고 있어 관련 활동이 늘어날 것으로 보입니다. 투자자 친구들은 시장의 흐름과 소문에 귀를 기울이며 신중한 태도를 보이고 있습니다."
+                    },
+                    {
+                        title: "다가오는 학급 행사를 앞두고 소비 패턴에 변화의 바람?", 
+                        content: "학급 임원회에서 새로운 교실 이벤트를 검토하고 있다는 소식이 전해지면서 학급 내 자금 흐름이 요동칠 조짐을 보이고 있습니다. 문구류와 간식류의 소비량이 평소보다 늘어날 수 있다는 관측이 나오는 가운데, 어떤 회사가 이 기회를 잡게 될지 주목됩니다."
+                    }
+                ],
                 changes: changes,
                 suggestedDepositRate: window.state.baseRate + 0.5,
                 depositRateReasoning: "기준 금리를 바탕으로 계산한 안전한 은행 이자율입니다."
@@ -896,11 +759,11 @@ ${companiesString}
                                     <span class="font-bold text-slate-800">${window.escapeHTML(comp.name)}</span>
                                     <span class="font-black ${diffColor}">${comp.price.toLocaleString()}달 ➔ ${newPrice.toLocaleString()}달 (${sign}${Math.abs(c.pct)}%)</span>
                                 </div>
-                                <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>원인 분석:</b> ${window.escapeHTML(c.reason)}</p>
+                                <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded">💡 <b>원인 및 배경 분석:</b> ${window.escapeHTML(c.reason)}</p>
                              </div>`;
                 }
             });
-            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 경제 뉴스 피드</h3><div class="space-y-3">`;
+            html += `</div></div><div><h3 class="font-bold text-lg mb-3 flex items-center gap-2 mt-4">📰 내일 발행될 경제 뉴스 피드 (미래 힌트 포함)</h3><div class="space-y-3">`;
             result.news.forEach(n => {
                 html += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                             <h4 class="font-bold text-slate-800 mb-1">🗞️ ${window.escapeHTML(n.title)}</h4>
@@ -1186,9 +1049,8 @@ ${companiesString}
 
         window.deleteUser = function(id) {
             if (id === 'teacher') return;
-            if (confirm("이 학생을 삭제하시겠습니까?\n삭제하면 장부에 적힌 이 학생의 주식 현황도 한꺼번에 파기됩니다.")) { 
+            if (confirm("이 학생을 삭제하시겠습니까?")) { 
                 window.state.users = window.state.users.filter(u => u.id !== id); 
-                if(window.state.investments) { window.state.investments = window.state.investments.filter(inv => inv.userId !== id); }
                 saveState(); 
             }
         }
@@ -1223,7 +1085,7 @@ ${companiesString}
 
         window.deleteCompany = function(id) {
             if (window.state.companies.length <= 1) return alert("최소 1개의 회사는 남아있어야 합니다.");
-            if (confirm("이 회사를 없애시겠습니까? 친구들이 기존에 해두었던 이 회사 투자금 장부도 함께 파기됩니다.")) { 
+            if (confirm("이 회사를 삭제하시겠습니까?")) { 
                 window.state.companies = window.state.companies.filter(c => c.id !== id); 
                 saveState(); 
             }
